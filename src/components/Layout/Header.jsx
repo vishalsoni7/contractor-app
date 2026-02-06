@@ -40,7 +40,7 @@ const Header = ({ drawerWidth, onMenuClick }) => {
 
   const handleProfile = () => {
     handleMenuClose();
-    navigate('/profile');
+    navigate('/dashboard/profile');
   };
 
   const companyName = contractor?.companyName || 'Royal Construction';

@@ -291,6 +291,33 @@ const Profile = () => {
             </CardContent>
           </Card>
         </Grid>
+
+        {/* App Details Section */}
+        <Grid item xs={12}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="h5" color="primary" fontWeight="bold" gutterBottom>
+                Kaamgar
+              </Typography>
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                कामगार - Contractor Management App
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                The complete solution for contractors and construction companies
+              </Typography>
+              <Divider sx={{ my: 3 }} />
+              <Typography variant="body2" color="text.secondary">
+                © {new Date().getFullYear()} Kaamgar. All rights reserved.
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                Developed by Vishal Soni | Rajasthan, India
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                Be kind to Animals. 🐾
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
     </Box>
   );

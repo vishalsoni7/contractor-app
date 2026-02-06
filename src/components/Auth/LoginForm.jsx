@@ -155,10 +155,10 @@ const LoginForm = () => {
       <Card sx={{ maxWidth: 450, width: '100%' }}>
         <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
           <Typography variant="h4" align="center" gutterBottom color="primary">
-            Royal Construction
+            Kaamgar
           </Typography>
           <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 3 }}>
-            Contractor Management / ठेकेदार प्रबंधन
+            कामगार - Contractor Management / ठेकेदार प्रबंधन
           </Typography>
 
           <Tabs

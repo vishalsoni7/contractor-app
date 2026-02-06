@@ -21,25 +21,20 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useThemeMode } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
 
 const menuItems = [
-  { text: 'Dashboard / डैशबोर्ड', icon: <Dashboard />, path: '/' },
-  { text: 'Workers / कर्मचारी', icon: <People />, path: '/workers' },
-  { text: 'Attendance / हाज़िरी', icon: <EventAvailable />, path: '/attendance' },
-  { text: 'Holidays / छुट्टियां', icon: <CalendarMonth />, path: '/holidays' },
-  { text: 'Reports / रिपोर्ट', icon: <Assessment />, path: '/reports' },
-  { text: 'Profile / प्रोफाइल', icon: <Person />, path: '/profile' },
+  { text: 'Dashboard / डैशबोर्ड', icon: <Dashboard />, path: '/dashboard' },
+  { text: 'Workers / कर्मचारी', icon: <People />, path: '/dashboard/workers' },
+  { text: 'Attendance / हाज़िरी', icon: <EventAvailable />, path: '/dashboard/attendance' },
+  { text: 'Holidays / छुट्टियां', icon: <CalendarMonth />, path: '/dashboard/holidays' },
+  { text: 'Reports / रिपोर्ट', icon: <Assessment />, path: '/dashboard/reports' },
+  { text: 'Profile / प्रोफाइल', icon: <Person />, path: '/dashboard/profile' },
 ];
 
 const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { mode, toggleTheme } = useThemeMode();
-  const { contractor } = useAuth();
-
-  const companyName = contractor?.companyName || 'Royal Construction';
-  const establishedYear = contractor?.establishedYear;
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -62,13 +57,11 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
         }}
       >
         <Typography variant="h6" color="primary" fontWeight="bold" textAlign="center">
-          {companyName}
+          Kaamgar
         </Typography>
-        {establishedYear && (
-          <Typography variant="caption" color="text.secondary">
-            Since {establishedYear}
-          </Typography>
-        )}
+        <Typography variant="caption" color="text.secondary">
+          कामगार - Contractor Management
+        </Typography>
       </Box>
       <Divider />
       <List sx={{ flexGrow: 1 }}>

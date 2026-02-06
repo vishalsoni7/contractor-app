@@ -74,13 +74,13 @@ const LandingPage = () => {
                 gutterBottom
                 sx={{ fontSize: { xs: '2rem', md: '3rem' } }}
               >
-                Contractor Management
+                Kaamgar
               </Typography>
               <Typography
                 variant="h5"
                 sx={{ mb: 2, opacity: 0.9, fontSize: { xs: '1.2rem', md: '1.5rem' } }}
               >
-                ठेकेदार प्रबंधन ऐप
+                कामगार - ठेकेदार प्रबंधन ऐप
               </Typography>
               <Typography
                 variant="h6"
@@ -348,7 +348,7 @@ const LandingPage = () => {
       {/* Footer */}
       <Box sx={{ py: 3, backgroundColor: 'background.paper', textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
-          © {new Date().getFullYear()} Contractor Management App. All rights reserved.
+          © {new Date().getFullYear()} Kaamgar. All rights reserved.
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
           Developed by Vishal Soni | Rajasthan, India
