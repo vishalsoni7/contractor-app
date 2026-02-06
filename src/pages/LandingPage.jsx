@@ -350,6 +350,12 @@ const LandingPage = () => {
         <Typography variant="body2" color="text.secondary">
           © {new Date().getFullYear()} Contractor Management App. All rights reserved.
         </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+          Developed by Vishal Soni | Rajasthan, India
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+          Be kind to Animals. 🐾
+        </Typography>
       </Box>
     </Box>
   );
