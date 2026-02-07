@@ -15,8 +15,8 @@ import {
   EventAvailable,
   CalendarMonth,
   Assessment,
-  Brightness4,
-  Brightness7,
+  // Brightness4,
+  // Brightness7,
   Person,
   AccountBalanceWallet,
 } from '@mui/icons-material';
@@ -25,17 +25,33 @@ import { useThemeMode } from '../../context/ThemeContext';
 
 const menuItems = [
   { text: 'Dashboard / डैशबोर्ड', icon: <Dashboard />, path: '/dashboard' },
+  {
+    text: 'Reports / रिपोर्ट',
+    icon: <Assessment />,
+    path: '/dashboard/reports',
+  },
+  {
+    text: 'Attendance / हाज़िरी',
+    icon: <EventAvailable />,
+    path: '/dashboard/attendance',
+  },
   { text: 'Workers / कर्मचारी', icon: <People />, path: '/dashboard/workers' },
-  { text: 'Attendance / हाज़िरी', icon: <EventAvailable />, path: '/dashboard/attendance' },
-  { text: 'Advances / अग्रिम', icon: <AccountBalanceWallet />, path: '/dashboard/advances' },
-  { text: 'Holidays / छुट्टियां', icon: <CalendarMonth />, path: '/dashboard/holidays' },
-  { text: 'Reports / रिपोर्ट', icon: <Assessment />, path: '/dashboard/reports' },
+  {
+    text: 'Advances / अग्रिम',
+    icon: <AccountBalanceWallet />,
+    path: '/dashboard/advances',
+  },
+  {
+    text: 'Holidays / छुट्टियां',
+    icon: <CalendarMonth />,
+    path: '/dashboard/holidays',
+  },
 ];
 
 const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { mode, toggleTheme } = useThemeMode();
+  // const { mode, toggleTheme } = useThemeMode();
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -57,10 +73,15 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
           borderColor: 'divider',
         }}
       >
-        <Typography variant="h6" color="primary" fontWeight="bold" textAlign="center">
+        <Typography
+          variant='h6'
+          color='primary'
+          fontWeight='bold'
+          textAlign='center'
+        >
           Kaamgar
         </Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant='caption' color='text.secondary'>
           कामगार - Contractor Management
         </Typography>
       </Box>
@@ -95,18 +116,20 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
             </ListItemButton>
           </ListItem>
         ))}
-        <ListItem disablePadding>
-          <ListItemButton
-            onClick={toggleTheme}
-          >
+        {/* <ListItem disablePadding>
+          <ListItemButton onClick={toggleTheme}>
             <ListItemIcon>
               {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
             </ListItemIcon>
             <ListItemText
-              primary={mode === 'dark' ? 'Light Mode / लाइट मोड' : 'Dark Mode / डार्क मोड'}
+              primary={
+                mode === 'dark'
+                  ? 'Light Mode / लाइट मोड'
+                  : 'Dark Mode / डार्क मोड'
+              }
             />
           </ListItemButton>
-        </ListItem>
+        </ListItem> */}
       </List>
       <Divider />
       <Box sx={{ p: 2 }}>
@@ -130,14 +153,15 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
         >
           <ListItemIcon
             sx={{
-              color: location.pathname === '/dashboard/profile' ? 'white' : 'inherit',
+              color:
+                location.pathname === '/dashboard/profile'
+                  ? 'white'
+                  : 'inherit',
             }}
           >
             <Person />
           </ListItemIcon>
-          <ListItemText
-            primary="Profile / प्रोफाइल"
-          />
+          <ListItemText primary='Profile / प्रोफाइल' />
         </ListItemButton>
       </Box>
     </Box>
@@ -145,12 +169,12 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
 
   return (
     <Box
-      component="nav"
+      component='nav'
       sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
     >
       {isMobile ? (
         <Drawer
-          variant="temporary"
+          variant='temporary'
           open={mobileOpen}
           onClose={onClose}
           ModalProps={{ keepMounted: true }}
@@ -165,7 +189,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
         </Drawer>
       ) : (
         <Drawer
-          variant="permanent"
+          variant='permanent'
           sx={{
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',

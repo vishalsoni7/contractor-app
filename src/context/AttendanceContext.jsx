@@ -48,16 +48,8 @@ export const AttendanceProvider = ({ children }) => {
     try {
       const record = await attendanceAPI.mark({ workerId, date, status, overtimeHours });
 
-      // Update local state
-      setAttendance(prev => {
-        const existingIndex = prev.findIndex(
-          a => a.workerId === workerId && a.date === date
-        );
-        if (existingIndex >= 0) {
-          return prev.map((a, index) => index === existingIndex ? record : a);
-        }
-        return [...prev, record];
-      });
+      // Refresh attendance data from server to ensure consistency
+      await fetchAttendance();
 
       return { success: true, record };
     } catch (err) {
