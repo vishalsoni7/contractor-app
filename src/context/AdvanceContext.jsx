@@ -1,43 +1,68 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { storage, STORAGE_KEYS } from '../utils/storage';
-import { generateId } from '../utils/calculations';
+import { advancesAPI } from '../utils/api';
+import { useAuth } from './AuthContext';
 
 const AdvanceContext = createContext(null);
 
 export const AdvanceProvider = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [advances, setAdvances] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Fetch advances when authenticated
   useEffect(() => {
-    const savedAdvances = storage.get(STORAGE_KEYS.ADVANCES);
-    if (savedAdvances) setAdvances(savedAdvances);
-  }, []);
+    if (isAuthenticated) {
+      fetchAdvances();
+    } else {
+      setAdvances([]);
+    }
+  }, [isAuthenticated]);
 
-  const saveAdvances = (newAdvances) => {
-    storage.set(STORAGE_KEYS.ADVANCES, newAdvances);
-    setAdvances(newAdvances);
+  const fetchAdvances = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await advancesAPI.getAll();
+      setAdvances(data);
+    } catch (err) {
+      setError(err.message);
+      console.error('Failed to fetch advances:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const addAdvance = (workerId, amount, reason = '', date = null) => {
-    const newAdvance = {
-      id: generateId(),
-      workerId,
-      amount: parseFloat(amount),
-      reason,
-      date: date || new Date().toISOString().split('T')[0],
-      createdAt: new Date().toISOString(),
-    };
-    const updatedAdvances = [...advances, newAdvance];
-    saveAdvances(updatedAdvances);
-    return newAdvance;
+  const addAdvance = async (workerId, amount, reason = '', date = null) => {
+    try {
+      setError(null);
+      const newAdvance = await advancesAPI.create({
+        workerId,
+        amount: parseFloat(amount),
+        reason,
+        date: date || new Date().toISOString().split('T')[0],
+      });
+      setAdvances(prev => [...prev, newAdvance]);
+      return newAdvance;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
   };
 
-  const deleteAdvance = (id) => {
-    const updatedAdvances = advances.filter(a => a.id !== id);
-    saveAdvances(updatedAdvances);
+  const deleteAdvance = async (id) => {
+    try {
+      setError(null);
+      await advancesAPI.delete(id);
+      setAdvances(prev => prev.filter(a => a._id !== id));
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
   };
 
   const getAdvancesForWorker = (workerId) => {
-    return advances.filter(a => a.workerId === workerId);
+    return advances.filter(a => a.workerId === workerId || a.workerId?._id === workerId);
   };
 
   const getAdvancesForMonth = (year, month) => {
@@ -47,26 +72,29 @@ export const AdvanceProvider = ({ children }) => {
 
   const getTotalAdvancesForWorker = (workerId) => {
     return advances
-      .filter(a => a.workerId === workerId)
+      .filter(a => a.workerId === workerId || a.workerId?._id === workerId)
       .reduce((sum, a) => sum + a.amount, 0);
   };
 
   const getTotalAdvancesForWorkerInMonth = (workerId, year, month) => {
     const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
     return advances
-      .filter(a => a.workerId === workerId && a.date.startsWith(monthStr))
+      .filter(a => (a.workerId === workerId || a.workerId?._id === workerId) && a.date.startsWith(monthStr))
       .reduce((sum, a) => sum + a.amount, 0);
   };
 
   return (
     <AdvanceContext.Provider value={{
       advances,
+      loading,
+      error,
       addAdvance,
       deleteAdvance,
       getAdvancesForWorker,
       getAdvancesForMonth,
       getTotalAdvancesForWorker,
       getTotalAdvancesForWorkerInMonth,
+      refreshAdvances: fetchAdvances,
     }}>
       {children}
     </AdvanceContext.Provider>
