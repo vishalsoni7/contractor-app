@@ -1,82 +1,77 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../utils/api';
+import { storage, STORAGE_KEYS } from '../utils/storage';
+import { generateId } from '../utils/calculations';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [contractor, setContractor] = useState(null);
+  const [allContractors, setAllContractors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Check if user is logged in (token exists)
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Verify token and get profile
-      authAPI.getProfile()
-        .then((data) => {
-          setContractor(data);
-        })
-        .catch(() => {
-          // Token invalid, clear it
-          localStorage.removeItem('token');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    } else {
-      setIsLoading(false);
+    const savedContractors = storage.get(STORAGE_KEYS.CONTRACTORS) || [];
+    setAllContractors(savedContractors);
+
+    const savedContractor = storage.get(STORAGE_KEYS.CONTRACTOR);
+    if (savedContractor && savedContractor.loggedIn) {
+      setContractor(savedContractor);
     }
+    setIsLoading(false);
   }, []);
 
-  const signup = async (data) => {
-    try {
-      setError(null);
-      const response = await authAPI.register({
-        companyName: data.companyName,
-        email: data.email,
-        password: data.password,
-        phone: data.phone || data.mobile,
-      });
+  const signup = (data) => {
+    const contractorData = {
+      id: generateId(),
+      firstName: data.firstName,
+      lastName: data.lastName,
+      mobile: data.mobile,
+      age: data.age,
+      companyName: data.companyName || '',
+      establishedYear: data.establishedYear || null,
+      createdAt: new Date().toISOString(),
+      loggedIn: true,
+    };
 
-      localStorage.setItem('token', response.token);
-      setContractor(response.contractor);
-      return { success: true };
-    } catch (err) {
-      setError(err.message);
-      return { success: false, error: err.message };
-    }
+    const updatedContractors = [...allContractors, contractorData];
+    storage.set(STORAGE_KEYS.CONTRACTORS, updatedContractors);
+    storage.set(STORAGE_KEYS.CONTRACTOR, contractorData);
+    setAllContractors(updatedContractors);
+    setContractor(contractorData);
+    return { success: true };
   };
 
-  const login = async (email, password) => {
-    try {
-      setError(null);
-      const response = await authAPI.login({ email, password });
-
-      localStorage.setItem('token', response.token);
-      setContractor(response.contractor);
-      return { success: true, contractor: response.contractor };
-    } catch (err) {
-      setError(err.message);
-      return { success: false, error: err.message };
+  const login = (mobile) => {
+    const existingContractor = allContractors.find(c => c.mobile === mobile);
+    if (existingContractor) {
+      const loggedInContractor = { ...existingContractor, loggedIn: true };
+      storage.set(STORAGE_KEYS.CONTRACTOR, loggedInContractor);
+      setContractor(loggedInContractor);
+      return { success: true, contractor: loggedInContractor };
     }
+    return { success: false, error: 'No account found with this mobile number' };
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    const updatedData = { ...contractor, loggedIn: false };
+    storage.set(STORAGE_KEYS.CONTRACTOR, updatedData);
     setContractor(null);
   };
 
-  const updateProfile = async (updates) => {
-    try {
-      setError(null);
-      const updatedContractor = await authAPI.updateProfile(updates);
-      setContractor(updatedContractor);
-      return { success: true };
-    } catch (err) {
-      setError(err.message);
-      return { success: false, error: err.message };
-    }
+  const updateProfile = (updates) => {
+    const updatedData = { ...contractor, ...updates };
+    storage.set(STORAGE_KEYS.CONTRACTOR, updatedData);
+
+    const updatedContractors = allContractors.map(c =>
+      c.id === contractor.id ? updatedData : c
+    );
+    storage.set(STORAGE_KEYS.CONTRACTORS, updatedContractors);
+    setAllContractors(updatedContractors);
+    setContractor(updatedData);
+  };
+
+  const checkMobileExists = (mobile) => {
+    return allContractors.some(c => c.mobile === mobile);
   };
 
   return (
@@ -84,11 +79,11 @@ export const AuthProvider = ({ children }) => {
       contractor,
       isAuthenticated: !!contractor,
       isLoading,
-      error,
       login,
       signup,
       logout,
       updateProfile,
+      checkMobileExists,
     }}>
       {children}
     </AuthContext.Provider>
