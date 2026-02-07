@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { attendanceAPI, holidaysAPI } from '../utils/api';
 import { useAuth } from './AuthContext';
 
@@ -51,8 +52,12 @@ export const AttendanceProvider = ({ children }) => {
       // Refresh attendance data from server to ensure consistency
       await fetchAttendance();
 
+      const statusLabel = status === 'present' ? 'Present ✓' : status === 'absent' ? 'Absent ✗' : 'Leave';
+      toast.success(`Marked ${statusLabel}`);
+
       return { success: true, record };
     } catch (err) {
+      toast.error('Failed to mark attendance');
       return { success: false, error: err.message };
     }
   };
@@ -94,8 +99,10 @@ export const AttendanceProvider = ({ children }) => {
     try {
       const newHoliday = await holidaysAPI.create(holidayData);
       setHolidays(prev => [...prev, newHoliday]);
+      toast.success('Holiday added / छुट्टी जोड़ी गई');
       return { success: true, holiday: newHoliday };
     } catch (err) {
+      toast.error('Failed to add holiday');
       return { success: false, error: err.message };
     }
   };
@@ -104,8 +111,10 @@ export const AttendanceProvider = ({ children }) => {
     try {
       await holidaysAPI.delete(id);
       setHolidays(prev => prev.filter(h => h.id !== id));
+      toast.success('Holiday deleted / छुट्टी हटाई गई');
       return { success: true };
     } catch (err) {
+      toast.error('Failed to delete holiday');
       return { success: false, error: err.message };
     }
   };

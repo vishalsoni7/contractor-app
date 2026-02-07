@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { authAPI, setToken, removeToken } from '../utils/api';
 
 const AuthContext = createContext(null);
@@ -33,10 +34,13 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         setToken(result.token);
         setContractor(result.contractor);
+        toast.success(`Welcome back, ${result.contractor.name}!`);
         return { success: true };
       }
+      toast.error('Login failed');
       return { success: false, error: 'Login failed' };
     } catch (error) {
+      toast.error(error.message || 'Login failed');
       return { success: false, error: error.message };
     }
   };
@@ -48,10 +52,13 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         setToken(result.token);
         setContractor(result.contractor);
+        toast.success('Account created successfully!');
         return { success: true };
       }
+      toast.error('Registration failed');
       return { success: false, error: 'Registration failed' };
     } catch (error) {
+      toast.error(error.message || 'Registration failed');
       return { success: false, error: error.message };
     }
   };
@@ -60,6 +67,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     removeToken();
     setContractor(null);
+    toast.success('Logged out / लॉग आउट');
   };
 
   // Update profile
@@ -67,8 +75,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await authAPI.updateProfile(updates);
       setContractor(result);
+      toast.success('Profile updated / प्रोफ़ाइल अपडेट');
       return { success: true };
     } catch (error) {
+      toast.error('Failed to update profile');
       return { success: false, error: error.message };
     }
   };

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { advancesAPI } from '../utils/api';
 import { useAuth } from './AuthContext';
 
@@ -43,8 +44,10 @@ export const AdvanceProvider = ({ children }) => {
 
       const newAdvance = await advancesAPI.create(advanceData);
       setAdvances(prev => [...prev, newAdvance]);
+      toast.success(`₹${amount} advance recorded / अग्रिम दर्ज`);
       return { success: true, advance: newAdvance };
     } catch (err) {
+      toast.error('Failed to record advance');
       return { success: false, error: err.message };
     }
   };
@@ -53,8 +56,10 @@ export const AdvanceProvider = ({ children }) => {
     try {
       const updatedAdvance = await advancesAPI.update(id, updates);
       setAdvances(prev => prev.map(a => a.id === id ? updatedAdvance : a));
+      toast.success('Advance updated / अपडेट किया गया');
       return { success: true, advance: updatedAdvance };
     } catch (err) {
+      toast.error('Failed to update advance');
       return { success: false, error: err.message };
     }
   };
@@ -63,8 +68,10 @@ export const AdvanceProvider = ({ children }) => {
     try {
       await advancesAPI.delete(id);
       setAdvances(prev => prev.filter(a => a.id !== id));
+      toast.success('Advance deleted / हटाया गया');
       return { success: true };
     } catch (err) {
+      toast.error('Failed to delete advance');
       return { success: false, error: err.message };
     }
   };

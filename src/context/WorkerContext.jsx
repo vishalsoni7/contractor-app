@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { workersAPI } from '../utils/api';
 import { useAuth } from './AuthContext';
 
@@ -36,8 +37,10 @@ export const WorkerProvider = ({ children }) => {
     try {
       const newWorker = await workersAPI.create(workerData);
       setWorkers(prev => [...prev, newWorker]);
+      toast.success(`${newWorker.name} added / जोड़ा गया`);
       return { success: true, worker: newWorker };
     } catch (err) {
+      toast.error('Failed to add worker');
       return { success: false, error: err.message };
     }
   };
@@ -46,8 +49,10 @@ export const WorkerProvider = ({ children }) => {
     try {
       const updatedWorker = await workersAPI.update(id, updates);
       setWorkers(prev => prev.map(w => w.id === id ? updatedWorker : w));
+      toast.success('Worker updated / अपडेट किया गया');
       return { success: true, worker: updatedWorker };
     } catch (err) {
+      toast.error('Failed to update worker');
       return { success: false, error: err.message };
     }
   };
@@ -56,8 +61,10 @@ export const WorkerProvider = ({ children }) => {
     try {
       await workersAPI.delete(id);
       setWorkers(prev => prev.filter(w => w.id !== id));
+      toast.success('Worker deleted / हटाया गया');
       return { success: true };
     } catch (err) {
+      toast.error('Failed to delete worker');
       return { success: false, error: err.message };
     }
   };
@@ -66,8 +73,11 @@ export const WorkerProvider = ({ children }) => {
     try {
       const updatedWorker = await workersAPI.toggleStatus(id);
       setWorkers(prev => prev.map(w => w.id === id ? updatedWorker : w));
+      const statusMsg = updatedWorker.status === 'active' ? 'Activated' : 'Deactivated';
+      toast.success(`${statusMsg} / स्थिति बदली`);
       return { success: true, worker: updatedWorker };
     } catch (err) {
+      toast.error('Failed to update status');
       return { success: false, error: err.message };
     }
   };
