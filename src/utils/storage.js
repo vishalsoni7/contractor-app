@@ -4,6 +4,7 @@ const STORAGE_KEYS = {
   WORKERS: 'workers_data',
   ATTENDANCE: 'attendance_data',
   HOLIDAYS: 'holidays_data',
+  ADVANCES: 'advances_data',
 };
 
 export const storage = {

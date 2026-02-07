@@ -9,13 +9,16 @@ import {
   Grid,
   Chip,
   Divider,
+  Avatar,
+  Link,
 } from '@mui/material';
 import {
   Person,
   CurrencyRupee,
-  AccessTime,
   CalendarToday,
   TrendingUp,
+  LocationOn,
+  AccessTime,
 } from '@mui/icons-material';
 import { useAttendance } from '../../context/AttendanceContext';
 import { getWorkerStats } from '../../utils/calculations';
@@ -42,6 +45,10 @@ const WorkerDetails = ({ open, onClose, worker }) => {
 
   const stats = getWorkerStats(worker, attendance);
 
+  const getGoogleMapsUrl = (location) => {
+    return `https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -57,6 +64,29 @@ const WorkerDetails = ({ open, onClose, worker }) => {
         </Box>
       </DialogTitle>
       <DialogContent>
+        {/* Photo Section */}
+        {worker.photo && (
+          <Box sx={{ mb: 3, textAlign: 'center' }}>
+            <Avatar
+              src={worker.photo}
+              sx={{ width: 120, height: 120, mx: 'auto', mb: 1 }}
+            />
+            {worker.photoLocation && (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                <LocationOn fontSize="small" color="success" />
+                <Link
+                  href={getGoogleMapsUrl(worker.photoLocation)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ fontSize: '0.75rem' }}
+                >
+                  {worker.photoLocation.latitude.toFixed(4)}, {worker.photoLocation.longitude.toFixed(4)}
+                </Link>
+              </Box>
+            )}
+          </Box>
+        )}
+
         <Grid container spacing={3}>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">
@@ -113,18 +143,18 @@ const WorkerDetails = ({ open, onClose, worker }) => {
           </Grid>
           <Grid item xs={6} sm={3}>
             <StatBox
-              icon={<CalendarToday color="warning" />}
-              label="Leave / छुट्टी"
-              value={stats.leave}
-              color="warning.main"
+              icon={<AccessTime color="info" />}
+              label="OT Hours / ओवरटाइम"
+              value={`${stats.overtimeHours}h`}
+              color="info.main"
             />
           </Grid>
           <Grid item xs={6} sm={3}>
             <StatBox
-              icon={<TrendingUp color="info" />}
+              icon={<TrendingUp color="warning" />}
               label="Attendance %"
               value={`${stats.attendancePercentage}%`}
-              color="info.main"
+              color="warning.main"
             />
           </Grid>
         </Grid>
@@ -142,7 +172,12 @@ const WorkerDetails = ({ open, onClose, worker }) => {
             <CurrencyRupee />
             <Box>
               <Typography variant="body2">Total Earnings / कुल कमाई</Typography>
-              <Typography variant="h4">₹{stats.totalEarnings}</Typography>
+              <Typography variant="h4">₹{stats.totalEarnings.toLocaleString()}</Typography>
+              {stats.overtimePay > 0 && (
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                  (includes ₹{Math.round(stats.overtimePay)} OT)
+                </Typography>
+              )}
             </Box>
           </Box>
         </Box>

@@ -18,6 +18,7 @@ import {
   Brightness4,
   Brightness7,
   Person,
+  AccountBalanceWallet,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useThemeMode } from '../../context/ThemeContext';
@@ -26,9 +27,9 @@ const menuItems = [
   { text: 'Dashboard / डैशबोर्ड', icon: <Dashboard />, path: '/dashboard' },
   { text: 'Workers / कर्मचारी', icon: <People />, path: '/dashboard/workers' },
   { text: 'Attendance / हाज़िरी', icon: <EventAvailable />, path: '/dashboard/attendance' },
+  { text: 'Advances / अग्रिम', icon: <AccountBalanceWallet />, path: '/dashboard/advances' },
   { text: 'Holidays / छुट्टियां', icon: <CalendarMonth />, path: '/dashboard/holidays' },
   { text: 'Reports / रिपोर्ट', icon: <Assessment />, path: '/dashboard/reports' },
-  { text: 'Profile / प्रोफाइल', icon: <Person />, path: '/dashboard/profile' },
 ];
 
 const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
@@ -94,22 +95,48 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
             </ListItemButton>
           </ListItem>
         ))}
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={toggleTheme}
+          >
+            <ListItemIcon>
+              {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+            </ListItemIcon>
+            <ListItemText
+              primary={mode === 'dark' ? 'Light Mode / लाइट मोड' : 'Dark Mode / डार्क मोड'}
+            />
+          </ListItemButton>
+        </ListItem>
       </List>
       <Divider />
       <Box sx={{ p: 2 }}>
         <ListItemButton
-          onClick={toggleTheme}
+          selected={location.pathname === '/dashboard/profile'}
+          onClick={() => handleNavigation('/dashboard/profile')}
           sx={{
             borderRadius: 1,
             bgcolor: 'action.hover',
+            '&.Mui-selected': {
+              backgroundColor: 'primary.main',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+              },
+              '& .MuiListItemIcon-root': {
+                color: 'white',
+              },
+            },
           }}
         >
-          <ListItemIcon>
-            {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+          <ListItemIcon
+            sx={{
+              color: location.pathname === '/dashboard/profile' ? 'white' : 'inherit',
+            }}
+          >
+            <Person />
           </ListItemIcon>
           <ListItemText
-            primary={mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            secondary={mode === 'dark' ? 'लाइट मोड' : 'डार्क मोड'}
+            primary="Profile / प्रोफाइल"
           />
         </ListItemButton>
       </Box>

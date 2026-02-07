@@ -25,7 +25,7 @@ export const AttendanceProvider = ({ children }) => {
     setHolidays(newHolidays);
   };
 
-  const markAttendance = (workerId, date, status) => {
+  const markAttendance = (workerId, date, status, overtimeHours = 0) => {
     const existingIndex = attendance.findIndex(
       a => a.workerId === workerId && a.date === date
     );
@@ -33,7 +33,7 @@ export const AttendanceProvider = ({ children }) => {
     let updatedAttendance;
     if (existingIndex >= 0) {
       updatedAttendance = attendance.map((a, index) =>
-        index === existingIndex ? { ...a, status } : a
+        index === existingIndex ? { ...a, status, overtimeHours } : a
       );
     } else {
       const newRecord = {
@@ -41,6 +41,7 @@ export const AttendanceProvider = ({ children }) => {
         workerId,
         date,
         status,
+        overtimeHours,
       };
       updatedAttendance = [...attendance, newRecord];
     }

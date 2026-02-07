@@ -5,12 +5,14 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkerProvider } from './context/WorkerContext';
 import { AttendanceProvider } from './context/AttendanceContext';
+import { AdvanceProvider } from './context/AdvanceContext';
 import AppLayout from './components/Layout/AppLayout';
 import Login from './pages/Login';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import Workers from './pages/Workers';
 import Attendance from './pages/Attendance';
+import Advances from './pages/Advances';
 import Holidays from './pages/Holidays';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
@@ -111,6 +113,7 @@ const AppRoutes = () => {
         <Route index element={<Dashboard />} />
         <Route path="workers" element={<Workers />} />
         <Route path="attendance" element={<Attendance />} />
+        <Route path="advances" element={<Advances />} />
         <Route path="holidays" element={<Holidays />} />
         <Route path="reports" element={<Reports />} />
         <Route path="profile" element={<Profile />} />
@@ -127,9 +130,11 @@ function App() {
         <AuthProvider>
           <WorkerProvider>
             <AttendanceProvider>
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
+              <AdvanceProvider>
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </AdvanceProvider>
             </AttendanceProvider>
           </WorkerProvider>
         </AuthProvider>

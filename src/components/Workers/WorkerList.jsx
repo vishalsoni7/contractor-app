@@ -16,7 +16,7 @@ import { useWorkers } from '../../context/WorkerContext';
 import { useAttendance } from '../../context/AttendanceContext';
 import { getWorkerStats } from '../../utils/calculations';
 
-const WorkerList = ({ onEdit, onDelete }) => {
+const WorkerList = ({ onEdit, onDelete, onToggleStatus }) => {
   const { workers } = useWorkers();
   const { attendance } = useAttendance();
   const [search, setSearch] = useState('');
@@ -87,6 +87,7 @@ const WorkerList = ({ onEdit, onDelete }) => {
               worker={worker}
               onEdit={onEdit}
               onDelete={onDelete}
+              onToggleStatus={onToggleStatus}
               stats={getWorkerStats(worker, attendance)}
             />
           </Grid>

@@ -22,19 +22,20 @@ import {
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useWorkers } from '../../context/WorkerContext';
 import { useAttendance } from '../../context/AttendanceContext';
-import { getWorkerStats } from '../../utils/calculations';
+import { useAdvances } from '../../context/AdvanceContext';
+import { calculateOvertimePay } from '../../utils/calculations';
 import {
   getMonthDays,
   getCurrentMonth,
   getCurrentYear,
   getMonthName,
-  getMonthNameHindi,
   formatDate,
 } from '../../utils/dateUtils';
 
 const WorkerReport = () => {
   const { workers } = useWorkers();
-  const { getAttendanceForWorker, holidays } = useAttendance();
+  const { getAttendanceForWorker } = useAttendance();
+  const { getTotalAdvancesForWorkerInMonth } = useAdvances();
   const [selectedWorker, setSelectedWorker] = useState('');
   const [month, setMonth] = useState(getCurrentMonth());
   const [year, setYear] = useState(getCurrentYear());
@@ -52,7 +53,14 @@ const WorkerReport = () => {
     present: monthlyAttendance.filter(a => a.status === 'present').length,
     absent: monthlyAttendance.filter(a => a.status === 'absent').length,
     leave: monthlyAttendance.filter(a => a.status === 'leave').length,
+    overtimeHours: monthlyAttendance.reduce((sum, a) => sum + (a.overtimeHours || 0), 0),
   };
+
+  const baseSalary = worker ? monthStats.present * worker.dailyWage : 0;
+  const overtimePay = worker ? calculateOvertimePay(worker, monthStats.overtimeHours) : 0;
+  const grossEarnings = baseSalary + overtimePay;
+  const advanceDeduction = selectedWorker ? getTotalAdvancesForWorkerInMonth(selectedWorker, year, month) : 0;
+  const netEarnings = grossEarnings - advanceDeduction;
 
   const handlePrevMonth = () => {
     if (month === 0) {
@@ -78,17 +86,24 @@ const WorkerReport = () => {
     return record?.status || '-';
   };
 
-  const getStatusChip = (status) => {
-    switch (status) {
-      case 'present':
-        return <Chip label="P" size="small" color="success" />;
-      case 'absent':
-        return <Chip label="A" size="small" color="error" />;
-      case 'leave':
-        return <Chip label="L" size="small" color="warning" />;
-      default:
-        return <Typography variant="body2" color="text.disabled">-</Typography>;
+  const getOvertimeForDay = (date) => {
+    const dateStr = formatDate(date);
+    const record = monthlyAttendance.find(a => a.date === dateStr);
+    return record?.overtimeHours || 0;
+  };
+
+  const getStatusChip = (status, overtime) => {
+    const label = status === 'present' ? (overtime > 0 ? `P+${overtime}` : 'P') :
+                  status === 'absent' ? 'A' :
+                  status === 'leave' ? 'L' : '-';
+    const color = status === 'present' ? 'success' :
+                  status === 'absent' ? 'error' :
+                  status === 'leave' ? 'warning' : 'default';
+
+    if (status === '-' || !status) {
+      return <Typography variant="body2" color="text.disabled">-</Typography>;
     }
+    return <Chip label={label} size="small" color={color} />;
   };
 
   return (
@@ -125,51 +140,68 @@ const WorkerReport = () => {
       {worker && (
         <>
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={6} sm={3}>
+            <Grid item xs={6} sm={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" color="success.main">
+                <CardContent sx={{ textAlign: 'center', p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  <Typography variant="h5" color="success.main">
                     {monthStats.present}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary">
                     Present / उपस्थित
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6} sm={3}>
+            <Grid item xs={6} sm={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" color="error.main">
+                <CardContent sx={{ textAlign: 'center', p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  <Typography variant="h5" color="error.main">
                     {monthStats.absent}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary">
                     Absent / अनुपस्थित
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6} sm={3}>
+            <Grid item xs={6} sm={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" color="warning.main">
-                    {monthStats.leave}
+                <CardContent sx={{ textAlign: 'center', p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  <Typography variant="h5" color="info.main">
+                    {monthStats.overtimeHours}h
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Leave / छुट्टी
+                  <Typography variant="caption" color="text.secondary">
+                    OT / ओवरटाइम
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6} sm={3}>
+            <Grid item xs={6} sm={2}>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  <Typography variant="h5" color="error.main">
+                    ₹{advanceDeduction.toLocaleString()}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Advance / अग्रिम
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={4}>
               <Card sx={{ bgcolor: 'primary.main' }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" color="white">
-                    ₹{monthStats.present * worker.dailyWage}
+                <CardContent sx={{ textAlign: 'center', p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  <Typography variant="h5" color="white">
+                    ₹{netEarnings.toLocaleString()}
                   </Typography>
-                  <Typography variant="body2" color="rgba(255,255,255,0.8)">
-                    Earned / कमाई
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Net Pay / शुद्ध वेतन
                   </Typography>
+                  {(overtimePay > 0 || advanceDeduction > 0) && (
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', display: 'block' }}>
+                      (Gross: ₹{grossEarnings.toLocaleString()})
+                    </Typography>
+                  )}
                 </CardContent>
               </Card>
             </Grid>
@@ -192,7 +224,7 @@ const WorkerReport = () => {
                 <TableRow>
                   {days.map(day => (
                     <TableCell key={day.toISOString()} align="center" sx={{ p: 0.5 }}>
-                      {getStatusChip(getStatusForDay(day))}
+                      {getStatusChip(getStatusForDay(day), getOvertimeForDay(day))}
                     </TableCell>
                   ))}
                 </TableRow>

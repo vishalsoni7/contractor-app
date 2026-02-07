@@ -50,6 +50,16 @@ const Workers = () => {
     setDeleteConfirm(id);
   };
 
+  const handleToggleStatus = (workerId) => {
+    const worker = getWorker(workerId);
+    if (worker) {
+      updateWorker(workerId, {
+        ...worker,
+        status: worker.status === 'active' ? 'inactive' : 'active'
+      });
+    }
+  };
+
   const confirmDelete = () => {
     if (deleteConfirm) {
       deleteWorker(deleteConfirm);
@@ -77,6 +87,7 @@ const Workers = () => {
       <WorkerList
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onToggleStatus={handleToggleStatus}
       />
 
       {isMobile && (

@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   TextField,
   Table,
@@ -16,11 +14,15 @@ import {
   Paper,
   Chip,
   Alert,
+  IconButton,
 } from '@mui/material';
 import {
   Check,
   Close,
   EventBusy,
+  Add,
+  Remove,
+  AccessTime,
 } from '@mui/icons-material';
 import { useWorkers } from '../../context/WorkerContext';
 import { useAttendance } from '../../context/AttendanceContext';
@@ -28,7 +30,7 @@ import { getTodayString, formatDisplayDate, formatTimeRange } from '../../utils/
 import { getDailyAttendanceStats } from '../../utils/calculations';
 
 const DailyAttendance = () => {
-  const { workers, getActiveWorkers } = useWorkers();
+  const { getActiveWorkers } = useWorkers();
   const { attendance, markAttendance, getAttendanceForDate, isHoliday } = useAttendance();
   const [selectedDate, setSelectedDate] = useState(getTodayString());
 
@@ -42,10 +44,27 @@ const DailyAttendance = () => {
     return record?.status || null;
   };
 
+  const getWorkerOvertime = (workerId) => {
+    const record = dayAttendance.find(a => a.workerId === workerId);
+    return record?.overtimeHours || 0;
+  };
+
   const handleStatusChange = (workerId, newStatus) => {
     if (newStatus !== null) {
-      markAttendance(workerId, selectedDate, newStatus);
+      const currentOvertime = getWorkerOvertime(workerId);
+      // Reset overtime if not present
+      const overtime = newStatus === 'present' ? currentOvertime : 0;
+      markAttendance(workerId, selectedDate, newStatus, overtime);
     }
+  };
+
+  const handleOvertimeChange = (workerId, delta) => {
+    const currentStatus = getWorkerStatus(workerId);
+    if (currentStatus !== 'present') return;
+
+    const currentOvertime = getWorkerOvertime(workerId);
+    const newOvertime = Math.max(0, Math.min(12, currentOvertime + delta));
+    markAttendance(workerId, selectedDate, currentStatus, newOvertime);
   };
 
   if (activeWorkers.length === 0) {
@@ -96,6 +115,14 @@ const DailyAttendance = () => {
           color="warning"
           variant="outlined"
         />
+        {stats.totalOvertimeHours > 0 && (
+          <Chip
+            icon={<AccessTime />}
+            label={`OT: ${stats.totalOvertimeHours}h`}
+            color="info"
+            variant="outlined"
+          />
+        )}
       </Box>
 
       <TableContainer component={Paper}>
@@ -106,38 +133,73 @@ const DailyAttendance = () => {
               <TableCell>Daily Wage / मजदूरी</TableCell>
               <TableCell>Work Hours / समय</TableCell>
               <TableCell align="center">Status / स्थिति</TableCell>
+              <TableCell align="center">Overtime / ओवरटाइम</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {activeWorkers.map(worker => (
-              <TableRow key={worker.id}>
-                <TableCell>
-                  <Typography variant="body1">{worker.name}</Typography>
-                </TableCell>
-                <TableCell>₹{worker.dailyWage}</TableCell>
-                <TableCell>
-                  {formatTimeRange(worker.workStartTime, worker.workEndTime)}
-                </TableCell>
-                <TableCell align="center">
-                  <ToggleButtonGroup
-                    value={getWorkerStatus(worker.id)}
-                    exclusive
-                    onChange={(e, newStatus) => handleStatusChange(worker.id, newStatus)}
-                    size="small"
-                  >
-                    <ToggleButton value="present" color="success">
-                      <Check fontSize="small" />
-                    </ToggleButton>
-                    <ToggleButton value="absent" color="error">
-                      <Close fontSize="small" />
-                    </ToggleButton>
-                    <ToggleButton value="leave" color="warning">
-                      <EventBusy fontSize="small" />
-                    </ToggleButton>
-                  </ToggleButtonGroup>
-                </TableCell>
-              </TableRow>
-            ))}
+            {activeWorkers.map(worker => {
+              const status = getWorkerStatus(worker.id);
+              const overtime = getWorkerOvertime(worker.id);
+              const isPresent = status === 'present';
+
+              return (
+                <TableRow key={worker.id}>
+                  <TableCell>
+                    <Typography variant="body1">{worker.name}</Typography>
+                  </TableCell>
+                  <TableCell>₹{worker.dailyWage}</TableCell>
+                  <TableCell>
+                    {formatTimeRange(worker.workStartTime, worker.workEndTime)}
+                  </TableCell>
+                  <TableCell align="center">
+                    <ToggleButtonGroup
+                      value={status}
+                      exclusive
+                      onChange={(e, newStatus) => handleStatusChange(worker.id, newStatus)}
+                      size="small"
+                    >
+                      <ToggleButton value="present" color="success">
+                        <Check fontSize="small" />
+                      </ToggleButton>
+                      <ToggleButton value="absent" color="error">
+                        <Close fontSize="small" />
+                      </ToggleButton>
+                      <ToggleButton value="leave" color="warning">
+                        <EventBusy fontSize="small" />
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  </TableCell>
+                  <TableCell align="center">
+                    {isPresent ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOvertimeChange(worker.id, -0.5)}
+                          disabled={overtime <= 0}
+                        >
+                          <Remove fontSize="small" />
+                        </IconButton>
+                        <Chip
+                          label={`${overtime}h`}
+                          size="small"
+                          color={overtime > 0 ? 'info' : 'default'}
+                          sx={{ minWidth: 50 }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOvertimeChange(worker.id, 0.5)}
+                          disabled={overtime >= 12}
+                        >
+                          <Add fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">-</Typography>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>

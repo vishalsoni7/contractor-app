@@ -10,8 +10,12 @@ import {
   InputAdornment,
   Alert,
   Box,
+  Divider,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import { CurrencyRupee, Warning } from '@mui/icons-material';
+import PhotoCapture from './PhotoCapture';
 
 const defaultWorker = {
   name: '',
@@ -19,6 +23,9 @@ const defaultWorker = {
   dailyWage: '',
   workStartTime: '09:00',
   workEndTime: '18:00',
+  photo: null,
+  photoLocation: null,
+  status: 'active',
 };
 
 const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
@@ -34,6 +41,9 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
         dailyWage: worker.dailyWage || '',
         workStartTime: worker.workStartTime || '09:00',
         workEndTime: worker.workEndTime || '18:00',
+        photo: worker.photo || null,
+        photoLocation: worker.photoLocation || null,
+        status: worker.status || 'active',
       });
     } else {
       setFormData(defaultWorker);
@@ -54,6 +64,10 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
       const age = parseInt(value);
       setShowChildLabourWarning(age > 0 && age < 18);
     }
+  };
+
+  const handlePhotoChange = (photo, photoLocation) => {
+    setFormData(prev => ({ ...prev, photo, photoLocation }));
   };
 
   const validate = () => {
@@ -83,6 +97,7 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
         ...formData,
         age: parseInt(formData.age),
         dailyWage: parseFloat(formData.dailyWage),
+        status: formData.status,
       });
       onClose();
     }
@@ -180,6 +195,46 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
               error={!!errors.workEndTime}
               helperText={errors.workEndTime}
               InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+
+          {worker && (
+            <>
+              <Grid item xs={12}>
+                <Divider sx={{ my: 1 }} />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.status === 'active'}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        status: e.target.checked ? 'active' : 'inactive'
+                      }))}
+                      color="success"
+                    />
+                  }
+                  label={formData.status === 'active' ? 'Active / सक्रिय' : 'Inactive / निष्क्रिय'}
+                />
+                <Box sx={{ mt: 0.5 }}>
+                  <small style={{ color: 'gray' }}>
+                    Inactive workers won't appear in attendance / निष्क्रिय कर्मचारी हाज़िरी में नहीं दिखेंगे
+                  </small>
+                </Box>
+              </Grid>
+            </>
+          )}
+
+          <Grid item xs={12}>
+            <Divider sx={{ my: 1 }} />
+          </Grid>
+
+          <Grid item xs={12}>
+            <PhotoCapture
+              photo={formData.photo}
+              photoLocation={formData.photoLocation}
+              onPhotoChange={handlePhotoChange}
             />
           </Grid>
         </Grid>

@@ -6,6 +6,7 @@ import {
   IconButton,
   Chip,
   Tooltip,
+  Avatar,
 } from '@mui/material';
 import {
   Edit,
@@ -13,10 +14,11 @@ import {
   AccessTime,
   CurrencyRupee,
   Person,
+  LocationOn,
 } from '@mui/icons-material';
 import { formatTimeRange } from '../../utils/dateUtils';
 
-const WorkerCard = ({ worker, onEdit, onDelete, stats }) => {
+const WorkerCard = ({ worker, onEdit, onDelete, onToggleStatus, stats }) => {
   return (
     <Card
       sx={{
@@ -32,28 +34,57 @@ const WorkerCard = ({ worker, onEdit, onDelete, stats }) => {
     >
       <CardContent sx={{ flexGrow: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Person color="primary" />
-            <Typography variant="h6" component="div">
-              {worker.name}
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {worker.photo ? (
+              <Box sx={{ position: 'relative' }}>
+                <Avatar
+                  src={worker.photo}
+                  sx={{ width: 48, height: 48 }}
+                />
+                {worker.photoLocation && (
+                  <LocationOn
+                    sx={{
+                      position: 'absolute',
+                      bottom: -4,
+                      right: -4,
+                      fontSize: 16,
+                      color: 'success.main',
+                      bgcolor: 'background.paper',
+                      borderRadius: '50%',
+                    }}
+                  />
+                )}
+              </Box>
+            ) : (
+              <Avatar sx={{ width: 48, height: 48, bgcolor: 'primary.main' }}>
+                <Person />
+              </Avatar>
+            )}
+            <Box>
+              <Typography variant="h6" component="div" sx={{ lineHeight: 1.2 }}>
+                {worker.name}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {worker.age} years
+              </Typography>
+            </Box>
           </Box>
-          <Chip
-            label={worker.status === 'active' ? 'Active' : 'Inactive'}
-            color={worker.status === 'active' ? 'success' : 'default'}
-            size="small"
-          />
+          <Tooltip title="Click to toggle status / स्थिति बदलने के लिए क्लिक करें">
+            <Chip
+              label={worker.status === 'active' ? 'Active' : 'Inactive'}
+              color={worker.status === 'active' ? 'success' : 'default'}
+              size="small"
+              onClick={() => onToggleStatus && onToggleStatus(worker.id)}
+              sx={{ cursor: 'pointer' }}
+            />
+          </Tooltip>
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            Age / उम्र: {worker.age} years
-          </Typography>
-
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <CurrencyRupee fontSize="small" color="action" />
             <Typography variant="body2" color="text.secondary">
-              {worker.dailyWage}/day
+              ₹{worker.dailyWage}/day
             </Typography>
           </Box>
 
@@ -66,8 +97,8 @@ const WorkerCard = ({ worker, onEdit, onDelete, stats }) => {
 
           {stats && (
             <Box sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
-              <Typography variant="body2" color="success.main">
-                Present: {stats.present} days | Earned: ₹{stats.totalEarnings}
+              <Typography variant="body2" color="success.main" fontWeight="600">
+                Present: {stats.present} days | Earned: ₹{stats.totalEarnings.toFixed(2)}
               </Typography>
             </Box>
           )}
