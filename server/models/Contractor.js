@@ -2,7 +2,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const contractorSchema = new mongoose.Schema({
-  companyName: {
+  firstName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  lastName: {
     type: String,
     required: true,
     trim: true
@@ -16,15 +21,17 @@ const contractorSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    select: false // Never return password in queries by default
   },
   phone: {
     type: String,
     trim: true
   },
-  address: {
+  companyName: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   subscriptionPlan: {
     type: String,
@@ -49,7 +56,7 @@ const contractorSchema = new mongoose.Schema({
 // Hash password before saving
 contractorSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
@@ -57,5 +64,17 @@ contractorSchema.pre('save', async function(next) {
 contractorSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
+// Transform _id to id in JSON output
+contractorSchema.set('toJSON', {
+  virtuals: true,
+  transform: function(doc, ret) {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    delete ret.password; // Never expose password
+    return ret;
+  }
+});
 
 module.exports = mongoose.model('Contractor', contractorSchema);

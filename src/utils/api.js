@@ -1,7 +1,13 @@
 const API_URL = import.meta.env.VITE_API_URL || 'https://kaamgar-api.onrender.com';
 
 // Get token from localStorage
-const getToken = () => localStorage.getItem('token');
+const getToken = () => localStorage.getItem('kaamgar_token');
+
+// Set token in localStorage
+export const setToken = (token) => localStorage.setItem('kaamgar_token', token);
+
+// Remove token from localStorage
+export const removeToken = () => localStorage.removeItem('kaamgar_token');
 
 // API request helper
 const apiRequest = async (endpoint, options = {}) => {
@@ -26,20 +32,24 @@ const apiRequest = async (endpoint, options = {}) => {
   return response.json();
 };
 
-// Auth API
+// Auth API - Email/Password authentication
 export const authAPI = {
+  // Register new contractor
   register: (data) => apiRequest('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
 
-  login: (data) => apiRequest('/api/auth/login', {
+  // Login
+  login: (email, password) => apiRequest('/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ email, password }),
   }),
 
+  // Get current contractor profile
   getProfile: () => apiRequest('/api/auth/me'),
 
+  // Update profile
   updateProfile: (data) => apiRequest('/api/auth/me', {
     method: 'PUT',
     body: JSON.stringify(data),

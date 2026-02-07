@@ -10,6 +10,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   ChevronLeft,
@@ -27,6 +29,8 @@ import {
 } from '../../utils/dateUtils';
 
 const AttendanceCalendar = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { workers } = useWorkers();
   const { getAttendanceForWorker, holidays } = useAttendance();
   const [selectedWorker, setSelectedWorker] = useState('');
@@ -80,8 +84,8 @@ const AttendanceCalendar = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
-        <FormControl size="small" sx={{ minWidth: 200 }}>
+      <Box sx={{ mb: 3 }}>
+        <FormControl size="small" sx={{ width: isMobile ? '100%' : 200, mb: 2 }}>
           <InputLabel>Select Worker / कर्मचारी चुनें</InputLabel>
           <Select
             value={selectedWorker}
@@ -96,7 +100,7 @@ const AttendanceCalendar = () => {
           </Select>
         </FormControl>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
           <IconButton onClick={handlePrevMonth} size="small">
             <ChevronLeft />
           </IconButton>

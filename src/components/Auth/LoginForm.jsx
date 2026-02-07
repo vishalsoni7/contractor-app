@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Box,
@@ -12,60 +12,67 @@ import {
   Tabs,
   Tab,
   Grid,
+  CircularProgress,
+  IconButton,
 } from '@mui/material';
-import { Phone, Lock, Person, Business, CalendarMonth } from '@mui/icons-material';
+import { Email, Lock, Person, Business, Phone, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
 const LoginForm = () => {
-  const { login, signup, checkMobileExists } = useAuth();
+  const { login, register } = useAuth();
   const [searchParams] = useSearchParams();
-  const [tab, setTab] = useState(searchParams.get('signup') ? 1 : 0); // 0 = Login, 1 = Signup
-  const [step, setStep] = useState('form'); // 'form' or 'otp'
+  const [tab, setTab] = useState(searchParams.get('signup') ? 1 : 0);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Login state
-  const [loginMobile, setLoginMobile] = useState('');
+  const [loginData, setLoginData] = useState({
+    email: '',
+    password: '',
+  });
 
   // Signup state
   const [signupData, setSignupData] = useState({
     firstName: '',
     lastName: '',
-    age: '',
-    mobile: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
     companyName: '',
-    establishedYear: '',
   });
-  const [otp, setOtp] = useState('');
 
   const handleTabChange = (e, newValue) => {
     setTab(newValue);
-    setStep('form');
     setError('');
-    setSuccess('');
-    setOtp('');
   };
 
-  const handleLoginSubmit = (e) => {
+  // Login
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    if (!/^[6-9]\d{9}$/.test(loginMobile)) {
-      setError('Please enter a valid 10-digit mobile number');
-      return;
+    try {
+      if (!loginData.email || !loginData.password) {
+        setError('Email and password are required');
+        setLoading(false);
+        return;
+      }
+
+      const result = await login(loginData.email, loginData.password);
+      if (!result.success) {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
     }
 
-    if (!checkMobileExists(loginMobile)) {
-      setError('No account found with this mobile number. Please sign up first.');
-      return;
-    }
-
-    const result = login(loginMobile);
-    if (!result.success) {
-      setError(result.error);
-    }
+    setLoading(false);
   };
 
+  // Signup
   const handleSignupChange = (e) => {
     const { name, value } = e.target;
     setSignupData(prev => ({ ...prev, [name]: value }));
@@ -80,65 +87,51 @@ const LoginForm = () => {
       setError('Last name is required');
       return false;
     }
-    if (!signupData.age || signupData.age < 18 || signupData.age > 100) {
-      setError('Please enter a valid age (18-100)');
+    if (!signupData.email.trim()) {
+      setError('Email is required');
       return false;
     }
-    if (!/^[6-9]\d{9}$/.test(signupData.mobile)) {
-      setError('Please enter a valid 10-digit mobile number');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupData.email)) {
+      setError('Please enter a valid email address');
       return false;
     }
-    if (checkMobileExists(signupData.mobile)) {
-      setError('An account already exists with this mobile number. Please login.');
+    if (!signupData.password || signupData.password.length < 6) {
+      setError('Password must be at least 6 characters');
       return false;
     }
-    if (signupData.establishedYear) {
-      const year = parseInt(signupData.establishedYear);
-      const currentYear = new Date().getFullYear();
-      if (year < 1900 || year > currentYear) {
-        setError(`Established year must be between 1900 and ${currentYear}`);
-        return false;
-      }
+    if (signupData.password !== signupData.confirmPassword) {
+      setError('Passwords do not match');
+      return false;
     }
     return true;
   };
 
-  const handleSignupSubmit = (e) => {
+  const handleSignupSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (!validateSignup()) return;
 
-    setStep('otp');
-    setSuccess('OTP sent to +91 ' + signupData.mobile);
-  };
+    setLoading(true);
 
-  const handleOtpSubmit = (e) => {
-    e.preventDefault();
-    setError('');
+    try {
+      const result = await register({
+        firstName: signupData.firstName.trim(),
+        lastName: signupData.lastName.trim(),
+        email: signupData.email.trim(),
+        password: signupData.password,
+        phone: signupData.phone.trim(),
+        companyName: signupData.companyName.trim(),
+      });
 
-    if (!/^\d{4}$/.test(otp)) {
-      setError('Please enter a 4-digit OTP');
-      return;
+      if (!result.success) {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
     }
 
-    // For demo, accept any 4-digit OTP
-    const result = signup({
-      ...signupData,
-      age: parseInt(signupData.age),
-      establishedYear: signupData.establishedYear ? parseInt(signupData.establishedYear) : null,
-    });
-
-    if (!result.success) {
-      setError('Signup failed. Please try again.');
-    }
-  };
-
-  const handleBack = () => {
-    setStep('form');
-    setOtp('');
-    setError('');
-    setSuccess('');
+    setLoading(false);
   };
 
   return (
@@ -158,7 +151,7 @@ const LoginForm = () => {
             Kaamgar
           </Typography>
           <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 3 }}>
-            कामगार - Contractor Management / ठेकेदार प्रबंधन
+            Contractor Management App
           </Typography>
 
           <Tabs
@@ -167,8 +160,8 @@ const LoginForm = () => {
             variant="fullWidth"
             sx={{ mb: 3 }}
           >
-            <Tab label="Login / लॉगिन" />
-            <Tab label="Sign Up / पंजीकरण" />
+            <Tab label="Login" />
+            <Tab label="Sign Up" />
           </Tabs>
 
           {error && (
@@ -177,25 +170,45 @@ const LoginForm = () => {
             </Alert>
           )}
 
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {success}
-            </Alert>
-          )}
-
+          {/* Login Tab */}
           {tab === 0 && (
             <form onSubmit={handleLoginSubmit}>
               <TextField
                 fullWidth
-                label="Mobile Number / मोबाइल नंबर"
-                value={loginMobile}
-                onChange={(e) => setLoginMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                placeholder="9876543210"
+                label="Email"
+                type="email"
+                value={loginData.email}
+                onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="your@email.com"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Phone color="action" />
-                      <Typography sx={{ ml: 0.5 }}>+91</Typography>
+                      <Email color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={loginData.password}
+                onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
                     </InputAdornment>
                   ),
                 }}
@@ -206,8 +219,9 @@ const LoginForm = () => {
                 variant="contained"
                 fullWidth
                 size="large"
+                disabled={loading}
               >
-                Login / लॉगिन करें
+                {loading ? <CircularProgress size={24} /> : 'Login'}
               </Button>
               <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2 }}>
                 Don't have an account? Switch to Sign Up tab
@@ -215,13 +229,14 @@ const LoginForm = () => {
             </form>
           )}
 
-          {tab === 1 && step === 'form' && (
+          {/* Signup Tab */}
+          {tab === 1 && (
             <form onSubmit={handleSignupSubmit}>
               <Grid container spacing={2}>
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
-                    label="First Name / पहला नाम *"
+                    label="First Name *"
                     name="firstName"
                     value={signupData.firstName}
                     onChange={handleSignupChange}
@@ -237,32 +252,65 @@ const LoginForm = () => {
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
-                    label="Last Name / उपनाम *"
+                    label="Last Name *"
                     name="lastName"
                     value={signupData.lastName}
                     onChange={handleSignupChange}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Age / उम्र *"
-                    name="age"
-                    type="number"
-                    value={signupData.age}
+                    label="Email *"
+                    name="email"
+                    type="email"
+                    value={signupData.email}
                     onChange={handleSignupChange}
-                    inputProps={{ min: 18, max: 100 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
-                    label="Mobile / मोबाइल *"
-                    name="mobile"
-                    value={signupData.mobile}
+                    label="Password *"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={signupData.password}
+                    onChange={handleSignupChange}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Confirm Password *"
+                    name="confirmPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={signupData.confirmPassword}
+                    onChange={handleSignupChange}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Phone (Optional)"
+                    name="phone"
+                    value={signupData.phone}
                     onChange={(e) => setSignupData(prev => ({
                       ...prev,
-                      mobile: e.target.value.replace(/\D/g, '').slice(0, 10)
+                      phone: e.target.value.replace(/\D/g, '').slice(0, 10)
                     }))}
                     InputProps={{
                       startAdornment: (
@@ -276,7 +324,7 @@ const LoginForm = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Company Name / कंपनी का नाम (Optional)"
+                    label="Company Name (Optional)"
                     name="companyName"
                     value={signupData.companyName}
                     onChange={handleSignupChange}
@@ -289,76 +337,16 @@ const LoginForm = () => {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Established Year / स्थापना वर्ष (Optional)"
-                    name="establishedYear"
-                    type="number"
-                    value={signupData.establishedYear}
-                    onChange={handleSignupChange}
-                    placeholder="e.g., 1999"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <CalendarMonth color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    inputProps={{ min: 1900, max: new Date().getFullYear() }}
-                  />
-                </Grid>
               </Grid>
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
                 size="large"
+                disabled={loading}
                 sx={{ mt: 3 }}
               >
-                Get OTP / OTP प्राप्त करें
-              </Button>
-            </form>
-          )}
-
-          {tab === 1 && step === 'otp' && (
-            <form onSubmit={handleOtpSubmit}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                OTP sent to +91 {signupData.mobile}
-              </Typography>
-              <TextField
-                fullWidth
-                label="Enter OTP / OTP दर्ज करें"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                placeholder="1234"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 3 }}>
-                Demo: Enter any 4 digits / डेमो: कोई भी 4 अंक दर्ज करें
-              </Typography>
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                size="large"
-                sx={{ mb: 1 }}
-              >
-                Verify & Sign Up / सत्यापित करें
-              </Button>
-              <Button
-                variant="text"
-                fullWidth
-                onClick={handleBack}
-              >
-                Back / वापस जाएं
+                {loading ? <CircularProgress size={24} /> : 'Sign Up'}
               </Button>
             </form>
           )}

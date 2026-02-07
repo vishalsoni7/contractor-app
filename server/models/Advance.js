@@ -39,4 +39,16 @@ const advanceSchema = new mongoose.Schema({
 advanceSchema.index({ contractorId: 1, workerId: 1 });
 advanceSchema.index({ contractorId: 1, date: 1 });
 
+// Transform _id to id in JSON output
+advanceSchema.set('toJSON', {
+  virtuals: true,
+  transform: function(doc, ret) {
+    ret.id = ret._id.toString();
+    if (ret.workerId) ret.workerId = ret.workerId.toString();
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  }
+});
+
 module.exports = mongoose.model('Advance', advanceSchema);

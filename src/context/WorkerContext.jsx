@@ -1,46 +1,75 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { storage, STORAGE_KEYS } from '../utils/storage';
-import { generateId } from '../utils/calculations';
+import { workersAPI } from '../utils/api';
+import { useAuth } from './AuthContext';
 
 const WorkerContext = createContext(null);
 
 export const WorkerProvider = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [workers, setWorkers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Fetch workers when authenticated
   useEffect(() => {
-    const savedWorkers = storage.get(STORAGE_KEYS.WORKERS);
-    if (savedWorkers) {
-      setWorkers(savedWorkers);
+    if (isAuthenticated) {
+      fetchWorkers();
+    } else {
+      setWorkers([]);
     }
-  }, []);
+  }, [isAuthenticated]);
 
-  const saveWorkers = (newWorkers) => {
-    storage.set(STORAGE_KEYS.WORKERS, newWorkers);
-    setWorkers(newWorkers);
+  const fetchWorkers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await workersAPI.getAll();
+      setWorkers(data);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching workers:', err);
+    }
+    setLoading(false);
   };
 
-  const addWorker = (workerData) => {
-    const newWorker = {
-      id: generateId(),
-      ...workerData,
-      joiningDate: workerData.joiningDate || new Date().toISOString().split('T')[0],
-      status: 'active',
-    };
-    const updatedWorkers = [...workers, newWorker];
-    saveWorkers(updatedWorkers);
-    return newWorker;
+  const addWorker = async (workerData) => {
+    try {
+      const newWorker = await workersAPI.create(workerData);
+      setWorkers(prev => [...prev, newWorker]);
+      return { success: true, worker: newWorker };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   };
 
-  const updateWorker = (id, updates) => {
-    const updatedWorkers = workers.map(w =>
-      w.id === id ? { ...w, ...updates } : w
-    );
-    saveWorkers(updatedWorkers);
+  const updateWorker = async (id, updates) => {
+    try {
+      const updatedWorker = await workersAPI.update(id, updates);
+      setWorkers(prev => prev.map(w => w.id === id ? updatedWorker : w));
+      return { success: true, worker: updatedWorker };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   };
 
-  const deleteWorker = (id) => {
-    const updatedWorkers = workers.filter(w => w.id !== id);
-    saveWorkers(updatedWorkers);
+  const deleteWorker = async (id) => {
+    try {
+      await workersAPI.delete(id);
+      setWorkers(prev => prev.filter(w => w.id !== id));
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const toggleWorkerStatus = async (id) => {
+    try {
+      const updatedWorker = await workersAPI.toggleStatus(id);
+      setWorkers(prev => prev.map(w => w.id === id ? updatedWorker : w));
+      return { success: true, worker: updatedWorker };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   };
 
   const getWorker = (id) => {
@@ -54,9 +83,13 @@ export const WorkerProvider = ({ children }) => {
   return (
     <WorkerContext.Provider value={{
       workers,
+      loading,
+      error,
+      fetchWorkers,
       addWorker,
       updateWorker,
       deleteWorker,
+      toggleWorkerStatus,
       getWorker,
       getActiveWorkers,
     }}>

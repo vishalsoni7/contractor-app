@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Grid,
-  Fab,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -32,7 +31,7 @@ const Advances = () => {
   const thisMonthTotal = monthlyAdvances.reduce((sum, a) => sum + a.amount, 0);
 
   return (
-    <Box>
+    <Box sx={{ pb: isMobile ? 8 : 0 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">
           Advances / अग्रिम
@@ -94,13 +93,29 @@ const Advances = () => {
       <AdvanceList />
 
       {isMobile && (
-        <Fab
-          color="primary"
-          sx={{ position: 'fixed', bottom: 16, right: 16 }}
-          onClick={() => setFormOpen(true)}
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            p: 2,
+            bgcolor: 'background.paper',
+            borderTop: 1,
+            borderColor: 'divider',
+            zIndex: 1000,
+          }}
         >
-          <Add />
-        </Fab>
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            startIcon={<Add />}
+            onClick={() => setFormOpen(true)}
+          >
+            Record Advance / अग्रिम दर्ज करें
+          </Button>
+        </Box>
       )}
 
       <AdvanceForm open={formOpen} onClose={() => setFormOpen(false)} />

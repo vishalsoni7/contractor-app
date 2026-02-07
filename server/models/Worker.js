@@ -58,4 +58,15 @@ const workerSchema = new mongoose.Schema({
 // Index for faster queries
 workerSchema.index({ contractorId: 1, status: 1 });
 
+// Transform _id to id in JSON output
+workerSchema.set('toJSON', {
+  virtuals: true,
+  transform: function(doc, ret) {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  }
+});
+
 module.exports = mongoose.model('Worker', workerSchema);

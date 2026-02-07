@@ -1,51 +1,88 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { storage, STORAGE_KEYS } from '../utils/storage';
-import { generateId } from '../utils/calculations';
+import { attendanceAPI, holidaysAPI } from '../utils/api';
+import { useAuth } from './AuthContext';
 
 const AttendanceContext = createContext(null);
 
 export const AttendanceProvider = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [attendance, setAttendance] = useState([]);
   const [holidays, setHolidays] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Fetch data when authenticated
   useEffect(() => {
-    const savedAttendance = storage.get(STORAGE_KEYS.ATTENDANCE);
-    const savedHolidays = storage.get(STORAGE_KEYS.HOLIDAYS);
-    if (savedAttendance) setAttendance(savedAttendance);
-    if (savedHolidays) setHolidays(savedHolidays);
-  }, []);
-
-  const saveAttendance = (newAttendance) => {
-    storage.set(STORAGE_KEYS.ATTENDANCE, newAttendance);
-    setAttendance(newAttendance);
-  };
-
-  const saveHolidays = (newHolidays) => {
-    storage.set(STORAGE_KEYS.HOLIDAYS, newHolidays);
-    setHolidays(newHolidays);
-  };
-
-  const markAttendance = (workerId, date, status, overtimeHours = 0) => {
-    const existingIndex = attendance.findIndex(
-      a => a.workerId === workerId && a.date === date
-    );
-
-    let updatedAttendance;
-    if (existingIndex >= 0) {
-      updatedAttendance = attendance.map((a, index) =>
-        index === existingIndex ? { ...a, status, overtimeHours } : a
-      );
+    if (isAuthenticated) {
+      fetchAttendance();
+      fetchHolidays();
     } else {
-      const newRecord = {
-        id: generateId(),
-        workerId,
-        date,
-        status,
-        overtimeHours,
-      };
-      updatedAttendance = [...attendance, newRecord];
+      setAttendance([]);
+      setHolidays([]);
     }
-    saveAttendance(updatedAttendance);
+  }, [isAuthenticated]);
+
+  const fetchAttendance = async (params = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await attendanceAPI.getAll(params);
+      setAttendance(data);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching attendance:', err);
+    }
+    setLoading(false);
+  };
+
+  const fetchHolidays = async (year) => {
+    try {
+      const data = await holidaysAPI.getAll(year);
+      setHolidays(data);
+    } catch (err) {
+      console.error('Error fetching holidays:', err);
+    }
+  };
+
+  const markAttendance = async (workerId, date, status, overtimeHours = 0) => {
+    try {
+      const record = await attendanceAPI.mark({ workerId, date, status, overtimeHours });
+
+      // Update local state
+      setAttendance(prev => {
+        const existingIndex = prev.findIndex(
+          a => a.workerId === workerId && a.date === date
+        );
+        if (existingIndex >= 0) {
+          return prev.map((a, index) => index === existingIndex ? record : a);
+        }
+        return [...prev, record];
+      });
+
+      return { success: true, record };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const bulkMarkAttendance = async (records) => {
+    try {
+      const result = await attendanceAPI.bulkMark(records);
+      await fetchAttendance(); // Refresh attendance data
+      return { success: true, result };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const deleteAttendanceRecord = async (id) => {
+    try {
+      await attendanceAPI.delete(id);
+      setAttendance(prev => prev.filter(a => a.id !== id));
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   };
 
   const getAttendanceForDate = (date) => {
@@ -61,19 +98,24 @@ export const AttendanceProvider = ({ children }) => {
     return attendance.filter(a => a.date.startsWith(monthStr));
   };
 
-  const addHoliday = (holidayData) => {
-    const newHoliday = {
-      id: generateId(),
-      ...holidayData,
-    };
-    const updatedHolidays = [...holidays, newHoliday];
-    saveHolidays(updatedHolidays);
-    return newHoliday;
+  const addHoliday = async (holidayData) => {
+    try {
+      const newHoliday = await holidaysAPI.create(holidayData);
+      setHolidays(prev => [...prev, newHoliday]);
+      return { success: true, holiday: newHoliday };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   };
 
-  const deleteHoliday = (id) => {
-    const updatedHolidays = holidays.filter(h => h.id !== id);
-    saveHolidays(updatedHolidays);
+  const deleteHoliday = async (id) => {
+    try {
+      await holidaysAPI.delete(id);
+      setHolidays(prev => prev.filter(h => h.id !== id));
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   };
 
   const isHoliday = (date) => {
@@ -84,7 +126,13 @@ export const AttendanceProvider = ({ children }) => {
     <AttendanceContext.Provider value={{
       attendance,
       holidays,
+      loading,
+      error,
+      fetchAttendance,
+      fetchHolidays,
       markAttendance,
+      bulkMarkAttendance,
+      deleteAttendanceRecord,
       getAttendanceForDate,
       getAttendanceForWorker,
       getAttendanceForMonth,

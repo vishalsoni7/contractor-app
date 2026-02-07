@@ -1,77 +1,76 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { storage, STORAGE_KEYS } from '../utils/storage';
-import { generateId } from '../utils/calculations';
+import { authAPI, setToken, removeToken } from '../utils/api';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [contractor, setContractor] = useState(null);
-  const [allContractors, setAllContractors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Check for existing token and fetch profile on mount
   useEffect(() => {
-    const savedContractors = storage.get(STORAGE_KEYS.CONTRACTORS) || [];
-    setAllContractors(savedContractors);
-
-    const savedContractor = storage.get(STORAGE_KEYS.CONTRACTOR);
-    if (savedContractor && savedContractor.loggedIn) {
-      setContractor(savedContractor);
-    }
-    setIsLoading(false);
-  }, []);
-
-  const signup = (data) => {
-    const contractorData = {
-      id: generateId(),
-      firstName: data.firstName,
-      lastName: data.lastName,
-      mobile: data.mobile,
-      age: data.age,
-      companyName: data.companyName || '',
-      establishedYear: data.establishedYear || null,
-      createdAt: new Date().toISOString(),
-      loggedIn: true,
+    const checkAuth = async () => {
+      const token = localStorage.getItem('kaamgar_token');
+      if (token) {
+        try {
+          const profile = await authAPI.getProfile();
+          setContractor(profile);
+        } catch (error) {
+          // Token expired or invalid
+          removeToken();
+        }
+      }
+      setIsLoading(false);
     };
 
-    const updatedContractors = [...allContractors, contractorData];
-    storage.set(STORAGE_KEYS.CONTRACTORS, updatedContractors);
-    storage.set(STORAGE_KEYS.CONTRACTOR, contractorData);
-    setAllContractors(updatedContractors);
-    setContractor(contractorData);
-    return { success: true };
-  };
+    checkAuth();
+  }, []);
 
-  const login = (mobile) => {
-    const existingContractor = allContractors.find(c => c.mobile === mobile);
-    if (existingContractor) {
-      const loggedInContractor = { ...existingContractor, loggedIn: true };
-      storage.set(STORAGE_KEYS.CONTRACTOR, loggedInContractor);
-      setContractor(loggedInContractor);
-      return { success: true, contractor: loggedInContractor };
+  // Login with email/password
+  const login = async (email, password) => {
+    try {
+      const result = await authAPI.login(email, password);
+      if (result.success) {
+        setToken(result.token);
+        setContractor(result.contractor);
+        return { success: true };
+      }
+      return { success: false, error: 'Login failed' };
+    } catch (error) {
+      return { success: false, error: error.message };
     }
-    return { success: false, error: 'No account found with this mobile number' };
   };
 
+  // Register new contractor
+  const register = async (data) => {
+    try {
+      const result = await authAPI.register(data);
+      if (result.success) {
+        setToken(result.token);
+        setContractor(result.contractor);
+        return { success: true };
+      }
+      return { success: false, error: 'Registration failed' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Logout
   const logout = () => {
-    const updatedData = { ...contractor, loggedIn: false };
-    storage.set(STORAGE_KEYS.CONTRACTOR, updatedData);
+    removeToken();
     setContractor(null);
   };
 
-  const updateProfile = (updates) => {
-    const updatedData = { ...contractor, ...updates };
-    storage.set(STORAGE_KEYS.CONTRACTOR, updatedData);
-
-    const updatedContractors = allContractors.map(c =>
-      c.id === contractor.id ? updatedData : c
-    );
-    storage.set(STORAGE_KEYS.CONTRACTORS, updatedContractors);
-    setAllContractors(updatedContractors);
-    setContractor(updatedData);
-  };
-
-  const checkMobileExists = (mobile) => {
-    return allContractors.some(c => c.mobile === mobile);
+  // Update profile
+  const updateProfile = async (updates) => {
+    try {
+      const result = await authAPI.updateProfile(updates);
+      setContractor(result);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   };
 
   return (
@@ -80,10 +79,9 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated: !!contractor,
       isLoading,
       login,
-      signup,
+      register,
       logout,
       updateProfile,
-      checkMobileExists,
     }}>
       {children}
     </AuthContext.Provider>

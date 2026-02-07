@@ -9,15 +9,10 @@ import {
   Select,
   MenuItem,
   Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
-  Chip,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useWorkers } from '../../context/WorkerContext';
@@ -33,6 +28,8 @@ import {
 } from '../../utils/dateUtils';
 
 const WorkerReport = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { workers } = useWorkers();
   const { getAttendanceForWorker } = useAttendance();
   const { getTotalAdvancesForWorkerInMonth } = useAdvances();
@@ -83,7 +80,7 @@ const WorkerReport = () => {
   const getStatusForDay = (date) => {
     const dateStr = formatDate(date);
     const record = monthlyAttendance.find(a => a.date === dateStr);
-    return record?.status || '-';
+    return record?.status || null;
   };
 
   const getOvertimeForDay = (date) => {
@@ -92,24 +89,30 @@ const WorkerReport = () => {
     return record?.overtimeHours || 0;
   };
 
-  const getStatusChip = (status, overtime) => {
-    const label = status === 'present' ? (overtime > 0 ? `P+${overtime}` : 'P') :
-                  status === 'absent' ? 'A' :
-                  status === 'leave' ? 'L' : '-';
-    const color = status === 'present' ? 'success' :
-                  status === 'absent' ? 'error' :
-                  status === 'leave' ? 'warning' : 'default';
-
-    if (status === '-' || !status) {
-      return <Typography variant="body2" color="text.disabled">-</Typography>;
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'present': return 'success.main';
+      case 'absent': return 'error.main';
+      case 'leave': return 'warning.main';
+      default: return 'grey.300';
     }
-    return <Chip label={label} size="small" color={color} />;
   };
+
+  const getStatusLabel = (status, overtime) => {
+    if (!status) return '';
+    if (status === 'present') return overtime > 0 ? `P+${overtime}` : 'P';
+    if (status === 'absent') return 'A';
+    if (status === 'leave') return 'L';
+    return '';
+  };
+
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const firstDayOfMonth = days[0].getDay();
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
-        <FormControl size="small" sx={{ minWidth: 200 }}>
+      <Box sx={{ mb: 3 }}>
+        <FormControl size="small" sx={{ width: isMobile ? '100%' : 200, mb: 2 }}>
           <InputLabel>Select Worker / कर्मचारी चुनें</InputLabel>
           <Select
             value={selectedWorker}
@@ -124,7 +127,7 @@ const WorkerReport = () => {
           </Select>
         </FormControl>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
           <IconButton onClick={handlePrevMonth} size="small">
             <ChevronLeft />
           </IconButton>
@@ -139,6 +142,7 @@ const WorkerReport = () => {
 
       {worker && (
         <>
+          {/* Stats Cards */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={6} sm={2}>
               <Card>
@@ -207,30 +211,97 @@ const WorkerReport = () => {
             </Grid>
           </Grid>
 
-          <TableContainer component={Paper}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  {days.map(day => (
-                    <TableCell key={day.toISOString()} align="center" sx={{ p: 0.5 }}>
-                      <Typography variant="caption">
+          {/* Calendar Grid View */}
+          <Paper sx={{ p: 2 }}>
+            {/* Week day headers */}
+            <Grid container spacing={1} sx={{ mb: 1 }}>
+              {weekDays.map(day => (
+                <Grid item xs={12/7} key={day}>
+                  <Typography
+                    variant="caption"
+                    align="center"
+                    display="block"
+                    fontWeight="bold"
+                    color="text.secondary"
+                  >
+                    {day}
+                  </Typography>
+                </Grid>
+              ))}
+            </Grid>
+
+            {/* Empty cells for days before the 1st */}
+            <Grid container spacing={1}>
+              {Array.from({ length: firstDayOfMonth }).map((_, index) => (
+                <Grid item xs={12/7} key={`empty-${index}`}>
+                  <Box sx={{ height: 48 }} />
+                </Grid>
+              ))}
+
+              {/* Calendar days */}
+              {days.map(day => {
+                const status = getStatusForDay(day);
+                const overtime = getOvertimeForDay(day);
+                const isToday = formatDate(day) === formatDate(new Date());
+
+                return (
+                  <Grid item xs={12/7} key={day.toISOString()}>
+                    <Box
+                      sx={{
+                        height: 48,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 1,
+                        bgcolor: status ? getStatusColor(status) : 'grey.100',
+                        border: isToday ? 2 : 1,
+                        borderColor: isToday ? 'primary.main' : 'divider',
+                        position: 'relative',
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight={status ? 'bold' : 'normal'}
+                        color={status ? 'white' : 'text.secondary'}
+                      >
                         {day.getDate()}
                       </Typography>
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow>
-                  {days.map(day => (
-                    <TableCell key={day.toISOString()} align="center" sx={{ p: 0.5 }}>
-                      {getStatusChip(getStatusForDay(day), getOvertimeForDay(day))}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
+                      {status && (
+                        <Typography
+                          variant="caption"
+                          color="white"
+                          sx={{ fontSize: '0.65rem', lineHeight: 1 }}
+                        >
+                          {getStatusLabel(status, overtime)}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Grid>
+                );
+              })}
+            </Grid>
+
+            {/* Legend */}
+            <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ width: 16, height: 16, bgcolor: 'success.main', borderRadius: 0.5 }} />
+                <Typography variant="caption">Present</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ width: 16, height: 16, bgcolor: 'error.main', borderRadius: 0.5 }} />
+                <Typography variant="caption">Absent</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ width: 16, height: 16, bgcolor: 'warning.main', borderRadius: 0.5 }} />
+                <Typography variant="caption">Leave</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ width: 16, height: 16, bgcolor: 'grey.100', border: 1, borderColor: 'divider', borderRadius: 0.5 }} />
+                <Typography variant="caption">Not Marked</Typography>
+              </Box>
+            </Box>
+          </Paper>
         </>
       )}
 
