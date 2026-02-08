@@ -74,24 +74,21 @@ export const getDailyAttendanceStats = (attendanceRecords, date) => {
   const dayRecords = attendanceRecords.filter(r => r.date === date);
   const present = dayRecords.filter(r => r.status === 'present').length;
   const absent = dayRecords.filter(r => r.status === 'absent').length;
-  const leave = dayRecords.filter(r => r.status === 'leave').length;
   const totalOvertimeHours = dayRecords.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
 
-  return { present, absent, leave, total: dayRecords.length, totalOvertimeHours };
+  return { present, absent, total: dayRecords.length, totalOvertimeHours };
 };
 
 export const getWorkerStats = (worker, attendanceRecords) => {
   const workerRecords = attendanceRecords.filter(r => r.workerId === worker.id);
   const present = workerRecords.filter(r => r.status === 'present').length;
   const absent = workerRecords.filter(r => r.status === 'absent').length;
-  const leave = workerRecords.filter(r => r.status === 'leave').length;
   const totalOvertimeHours = workerRecords.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
   const overtimePay = calculateOvertimePay(worker, totalOvertimeHours);
 
   return {
     present,
     absent,
-    leave,
     totalDays: workerRecords.length,
     overtimeHours: totalOvertimeHours,
     overtimePay,

@@ -15,10 +15,13 @@ import {
   CurrencyRupee,
   Person,
   LocationOn,
+  AccountBalanceWallet,
 } from '@mui/icons-material';
 import { formatTimeRange } from '../../utils/dateUtils';
+import { useLanguage } from '../../context/LanguageContext';
 
-const WorkerCard = ({ worker, onEdit, onDelete, onToggleStatus, stats }) => {
+const WorkerCard = ({ worker, onEdit, onDelete, onToggleStatus, stats, totalAdvances = 0 }) => {
+  const { getText } = useLanguage();
   return (
     <Card
       sx={{
@@ -33,10 +36,10 @@ const WorkerCard = ({ worker, onEdit, onDelete, onToggleStatus, stats }) => {
       }}
     >
       <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0, overflow: 'hidden' }}>
             {worker.photo ? (
-              <Box sx={{ position: 'relative' }}>
+              <Box sx={{ position: 'relative', flexShrink: 0 }}>
                 <Avatar
                   src={worker.photo}
                   sx={{ width: 48, height: 48 }}
@@ -56,28 +59,51 @@ const WorkerCard = ({ worker, onEdit, onDelete, onToggleStatus, stats }) => {
                 )}
               </Box>
             ) : (
-              <Avatar sx={{ width: 48, height: 48, bgcolor: 'primary.main' }}>
+              <Avatar sx={{ width: 48, height: 48, bgcolor: 'primary.main', flexShrink: 0 }}>
                 <Person />
               </Avatar>
             )}
-            <Box>
-              <Typography variant="h6" component="div" sx={{ lineHeight: 1.2 }}>
-                {worker.name}
-              </Typography>
+            <Box sx={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
+              <Tooltip title={worker.name.length > 15 ? worker.name : ''} placement="top">
+                <Typography 
+                  variant="h6" 
+                  component="div" 
+                  sx={{ 
+                    lineHeight: 1.2,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {worker.name}
+                </Typography>
+              </Tooltip>
               <Typography variant="caption" color="text.secondary">
-                {worker.age} years
+                {worker.age} {getText('years', 'वर्ष')}
               </Typography>
             </Box>
           </Box>
-          <Tooltip title="Click to toggle status / स्थिति बदलने के लिए क्लिक करें">
-            <Chip
-              label={worker.status === 'active' ? 'Active' : 'Inactive'}
-              color={worker.status === 'active' ? 'success' : 'default'}
-              size="small"
-              onClick={() => onToggleStatus && onToggleStatus(worker.id)}
-              sx={{ cursor: 'pointer' }}
-            />
-          </Tooltip>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+            <Tooltip title={getText('Edit', 'संपादित करें')}>
+              <IconButton size="small" onClick={() => onEdit(worker)}>
+                <Edit fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={getText('Delete', 'हटाएं')}>
+              <IconButton size="small" color="error" onClick={() => onDelete(worker.id)}>
+                <Delete fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={getText('Click to toggle status', 'स्थिति बदलने के लिए क्लिक करें')}>
+              <Chip
+                label={worker.status === 'active' ? getText('Active', 'सक्रिय') : getText('Inactive', 'निष्क्रिय')}
+                color={worker.status === 'active' ? 'success' : 'default'}
+                size="small"
+                onClick={() => onToggleStatus && onToggleStatus(worker.id)}
+                sx={{ cursor: 'pointer', ml: 0.5 }}
+              />
+            </Tooltip>
+          </Box>
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -98,25 +124,25 @@ const WorkerCard = ({ worker, onEdit, onDelete, onToggleStatus, stats }) => {
           {stats && (
             <Box sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
               <Typography variant="body2" color="success.main" fontWeight="600">
-                Present: {stats.present} days | Earned: ₹{stats.totalEarnings.toFixed(2)}
+                {getText('Present', 'उपस्थित')}: {stats.present} {getText('days', 'दिन')} | {getText('Earned', 'अर्जित')}: ₹{stats.totalEarnings.toFixed(2)}
               </Typography>
+              {totalAdvances > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                  <AccountBalanceWallet fontSize="small" sx={{ color: 'error.main' }} />
+                  <Typography variant="body2" color="error.main" fontWeight="600">
+                    {getText('Advances', 'अग्रिम')}: ₹{totalAdvances.toLocaleString()}
+                  </Typography>
+                </Box>
+              )}
+              {stats.totalEarnings > 0 && (
+                <Typography variant="body2" color="primary.main" fontWeight="600" sx={{ mt: 0.5 }}>
+                  {getText('Net Pay', 'शुद्ध वेतन')}: ₹{(stats.totalEarnings - totalAdvances).toFixed(2)}
+                </Typography>
+              )}
             </Box>
           )}
         </Box>
       </CardContent>
-
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1, pt: 0 }}>
-        <Tooltip title="Edit / संपादित करें">
-          <IconButton size="small" onClick={() => onEdit(worker)}>
-            <Edit fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Delete / हटाएं">
-          <IconButton size="small" color="error" onClick={() => onDelete(worker.id)}>
-            <Delete fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Box>
     </Card>
   );
 };

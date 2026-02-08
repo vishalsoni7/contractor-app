@@ -22,9 +22,11 @@ import {
   Cancel,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const Profile = () => {
   const { contractor, updateProfile } = useAuth();
+  const { getText } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -102,7 +104,7 @@ const Profile = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Profile / प्रोफाइल
+        {getText('Profile', 'प्रोफ़ाइल')}
       </Typography>
 
       {success && (
@@ -146,7 +148,7 @@ const Profile = () => {
               )}
               {contractor?.establishedYear && (
                 <Typography variant="caption" color="text.secondary">
-                  Since {contractor.establishedYear}
+                  {getText('Since', 'से')} {contractor.establishedYear}
                 </Typography>
               )}
             </CardContent>
@@ -158,19 +160,19 @@ const Profile = () => {
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6">
-                  Personal Details / व्यक्तिगत विवरण
+                  {getText('Personal Details', 'व्यक्तिगत विवरण')}
                 </Typography>
                 {!isEditing ? (
                   <Button startIcon={<Edit />} onClick={handleEdit}>
-                    Edit / संपादित करें
+                    {getText('Edit', 'संपादित करें')}
                   </Button>
                 ) : (
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button startIcon={<Cancel />} onClick={handleCancel} color="inherit">
-                      Cancel
+                      {getText('Cancel', 'रद्द करें')}
                     </Button>
                     <Button startIcon={<Save />} onClick={handleSave} variant="contained">
-                      Save
+                      {getText('Save', 'सहेजें')}
                     </Button>
                   </Box>
                 )}
@@ -180,7 +182,7 @@ const Profile = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="First Name / पहला नाम *"
+                    label={getText('First Name', 'पहला नाम') + ' *'}
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
@@ -197,7 +199,7 @@ const Profile = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Last Name / उपनाम *"
+                    label={getText('Last Name', 'उपनाम') + ' *'}
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
@@ -207,7 +209,7 @@ const Profile = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Age / उम्र *"
+                    label={getText('Age', 'उम्र') + ' *'}
                     name="age"
                     type="number"
                     value={formData.age}
@@ -219,7 +221,7 @@ const Profile = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Mobile / मोबाइल"
+                    label={getText('Mobile', 'मोबाइल')}
                     value={contractor?.mobile || ''}
                     disabled
                     InputProps={{
@@ -237,14 +239,14 @@ const Profile = () => {
               <Divider sx={{ my: 3 }} />
 
               <Typography variant="h6" gutterBottom>
-                Company Details / कंपनी विवरण (Optional)
+                {getText('Company Details', 'कंपनी विवरण')} ({getText('Optional', 'वैकल्पिक')})
               </Typography>
 
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Company Name / कंपनी का नाम"
+                    label={getText('Company Name', 'कंपनी का नाम')}
                     name="companyName"
                     value={formData.companyName}
                     onChange={handleChange}
@@ -261,7 +263,7 @@ const Profile = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Established Year / स्थापना वर्ष"
+                    label={getText('Established Year', 'स्थापना वर्ष')}
                     name="establishedYear"
                     type="number"
                     value={formData.establishedYear}
@@ -282,10 +284,7 @@ const Profile = () => {
 
               <Box sx={{ mt: 3, p: 2, bgcolor: 'info.light', borderRadius: 1, opacity: 0.8 }}>
                 <Typography variant="body2" color="info.contrastText">
-                  Note: Mobile number cannot be changed. Contact support if you need to update it.
-                </Typography>
-                <Typography variant="caption" color="info.contrastText">
-                  नोट: मोबाइल नंबर बदला नहीं जा सकता। अपडेट के लिए सहायता से संपर्क करें।
+                  {getText('Note: Mobile number cannot be changed. Contact support if you need to update it.', 'नोट: मोबाइल नंबर बदला नहीं जा सकता। अपडेट के लिए सहायता से संपर्क करें।')}
                 </Typography>
               </Box>
             </CardContent>
@@ -300,10 +299,10 @@ const Profile = () => {
                 Kaamgar
               </Typography>
               <Typography variant="body1" color="text.secondary" gutterBottom>
-                कामगार - Contractor Management App
+                {getText('Contractor Management App', 'कामगार - ठेकेदार प्रबंधन ऐप')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                The complete solution for contractors and construction companies
+                {getText('The complete solution for contractors and construction companies', 'ठेकेदारों और निर्माण कंपनियों के लिए संपूर्ण समाधान')}
               </Typography>
               <Divider sx={{ my: 3 }} />
               <Typography variant="body2" color="text.secondary">

@@ -7,6 +7,7 @@ export const getTheme = (mode) => createTheme({
       main: '#1976d2',
       light: '#42a5f5',
       dark: '#1565c0',
+      lighter: mode === 'dark' ? 'rgba(25, 118, 210, 0.15)' : 'rgba(25, 118, 210, 0.08)',
     },
     secondary: {
       main: '#9c27b0',
@@ -15,12 +16,20 @@ export const getTheme = (mode) => createTheme({
     },
     success: {
       main: '#2e7d32',
+      light: '#4caf50',
+      lighter: mode === 'dark' ? 'rgba(46, 125, 50, 0.15)' : 'rgba(46, 125, 50, 0.08)',
     },
     warning: {
       main: '#ed6c02',
+      lighter: mode === 'dark' ? 'rgba(237, 108, 2, 0.15)' : 'rgba(237, 108, 2, 0.08)',
     },
     error: {
       main: '#d32f2f',
+      lighter: mode === 'dark' ? 'rgba(211, 47, 47, 0.15)' : 'rgba(211, 47, 47, 0.08)',
+    },
+    info: {
+      main: '#0288d1',
+      lighter: mode === 'dark' ? 'rgba(2, 136, 209, 0.15)' : 'rgba(2, 136, 209, 0.08)',
     },
     background: {
       default: mode === 'dark' ? '#121212' : '#f5f5f5',

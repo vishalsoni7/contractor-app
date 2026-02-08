@@ -9,6 +9,12 @@ import {
   MenuItem,
   Tooltip,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -19,11 +25,15 @@ import {
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSelector from './LanguageSelector';
 
 const Header = ({ drawerWidth, onMenuClick }) => {
   const navigate = useNavigate();
   const { contractor, logout } = useAuth();
+  const { getText } = useLanguage();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [logoutDialog, setLogoutDialog] = useState(false);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -33,9 +43,18 @@ const Header = ({ drawerWidth, onMenuClick }) => {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
     handleMenuClose();
+    setLogoutDialog(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    setLogoutDialog(false);
     logout();
+  };
+
+  const handleLogoutCancel = () => {
+    setLogoutDialog(false);
   };
 
   const handleProfile = () => {
@@ -84,6 +103,7 @@ const Header = ({ drawerWidth, onMenuClick }) => {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <LanguageSelector />
           <Tooltip title="Account">
             <IconButton color="inherit" onClick={handleMenuOpen}>
               <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
@@ -111,14 +131,41 @@ const Header = ({ drawerWidth, onMenuClick }) => {
           </MenuItem>
           <MenuItem onClick={handleProfile}>
             <Person sx={{ mr: 1 }} />
-            Profile / प्रोफ़ाइल
+            {getText('Profile', 'प्रोफ़ाइल')}
           </MenuItem>
-          <MenuItem onClick={handleLogout}>
+          <MenuItem onClick={handleLogoutClick}>
             <Logout sx={{ mr: 1 }} />
-            Logout / लॉगआउट
+            {getText('Logout', 'लॉगआउट')}
           </MenuItem>
         </Menu>
       </Toolbar>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog
+        open={logoutDialog}
+        onClose={handleLogoutCancel}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>{getText('Logout', 'लॉगआउट')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {getText('Are you sure you want to logout?', 'क्या आप वाकई लॉग आउट करना चाहते हैं?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleLogoutCancel}>
+            {getText('Cancel', 'रद्द करें')}
+          </Button>
+          <Button
+            onClick={handleLogoutConfirm}
+            color="error"
+            variant="contained"
+          >
+            {getText('Logout', 'लॉगआउट')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   );
 };

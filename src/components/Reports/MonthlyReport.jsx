@@ -20,6 +20,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useWorkers } from '../../context/WorkerContext';
 import { useAttendance } from '../../context/AttendanceContext';
 import { useAdvances } from '../../context/AdvanceContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { calculateOvertimePay } from '../../utils/calculations';
 import {
   getCurrentMonth,
@@ -34,6 +35,7 @@ const MonthlyReport = () => {
   const { workers } = useWorkers();
   const { getAttendanceForMonth } = useAttendance();
   const { getTotalAdvancesForWorkerInMonth } = useAdvances();
+  const { getText, isEnglish, isHindi } = useLanguage();
   const [month, setMonth] = useState(getCurrentMonth());
   const [year, setYear] = useState(getCurrentYear());
 
@@ -70,7 +72,6 @@ const MonthlyReport = () => {
     return {
       present,
       absent: workerRecords.filter(a => a.status === 'absent').length,
-      leave: workerRecords.filter(a => a.status === 'leave').length,
       overtimeHours,
       baseSalary,
       overtimePay,
@@ -86,14 +87,13 @@ const MonthlyReport = () => {
       return {
         present: acc.present + stats.present,
         absent: acc.absent + stats.absent,
-        leave: acc.leave + stats.leave,
         overtimeHours: acc.overtimeHours + stats.overtimeHours,
         grossSalary: acc.grossSalary + stats.grossSalary,
         advances: acc.advances + stats.advances,
         netSalary: acc.netSalary + stats.netSalary,
       };
     },
-    { present: 0, absent: 0, leave: 0, overtimeHours: 0, grossSalary: 0, advances: 0, netSalary: 0 }
+    { present: 0, absent: 0, overtimeHours: 0, grossSalary: 0, advances: 0, netSalary: 0 }
   );
 
   return (
@@ -103,7 +103,9 @@ const MonthlyReport = () => {
           <ChevronLeft />
         </IconButton>
         <Typography variant={isMobile ? 'subtitle1' : 'h5'} sx={{ minWidth: isMobile ? 150 : 200, textAlign: 'center' }}>
-          {getMonthName(month)} {year} / {getMonthNameHindi(month)}
+          {isEnglish && `${getMonthName(month)} ${year}`}
+          {isHindi && getMonthNameHindi(month)}
+          {!isEnglish && !isHindi && `${getMonthName(month)} ${year} / ${getMonthNameHindi(month)}`}
         </Typography>
         <IconButton onClick={handleNextMonth} size="small">
           <ChevronRight />
@@ -118,7 +120,7 @@ const MonthlyReport = () => {
                 {totalStats.present}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                Total Present / कुल उपस्थिति
+                {getText('Total Present', 'कुल उपस्थिति')}
               </Typography>
             </CardContent>
           </Card>
@@ -130,7 +132,7 @@ const MonthlyReport = () => {
                 {totalStats.overtimeHours}h
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                Total OT / कुल ओवरटाइम
+                {getText('Total OT', 'कुल ओवरटाइम')}
               </Typography>
             </CardContent>
           </Card>
@@ -142,7 +144,7 @@ const MonthlyReport = () => {
                 ₹{totalStats.advances.toLocaleString()}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                Advances / अग्रिम
+                {getText('Advances', 'अग्रिम')}
               </Typography>
             </CardContent>
           </Card>
@@ -154,7 +156,7 @@ const MonthlyReport = () => {
                 ₹{totalStats.netSalary.toLocaleString()}
               </Typography>
               <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)', fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                Net Salary / शुद्ध वेतन
+                {getText('Net Salary', 'शुद्ध वेतन')}
               </Typography>
             </CardContent>
           </Card>
@@ -162,19 +164,19 @@ const MonthlyReport = () => {
       </Grid>
 
       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-        Worker-wise Summary / कर्मचारी वार सारांश
+        {getText('Worker-wise Summary', 'कर्मचारी वार सारांश')}
       </Typography>
 
       <TableContainer component={Paper} sx={{ overflowX: 'auto' }}>
         <Table size={isMobile ? 'small' : 'medium'} sx={{ minWidth: isMobile ? 550 : 750 }}>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ whiteSpace: 'nowrap', fontSize: isMobile ? '0.7rem' : '0.875rem' }}>Worker</TableCell>
-              <TableCell align="center" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>Rate</TableCell>
+              <TableCell sx={{ whiteSpace: 'nowrap', fontSize: isMobile ? '0.7rem' : '0.875rem' }}>{getText('Worker', 'कर्मचारी')}</TableCell>
+              <TableCell align="center" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>{getText('Rate', 'दर')}</TableCell>
               <TableCell align="center" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>P</TableCell>
               <TableCell align="center" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>OT</TableCell>
-              <TableCell align="center" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem', color: 'error.main' }}>Adv</TableCell>
-              <TableCell align="right" sx={{ whiteSpace: 'nowrap', fontSize: isMobile ? '0.7rem' : '0.875rem' }}>Net</TableCell>
+              <TableCell align="center" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem', color: 'error.main' }}>{getText('Adv', 'अग्रिम')}</TableCell>
+              <TableCell align="right" sx={{ whiteSpace: 'nowrap', fontSize: isMobile ? '0.7rem' : '0.875rem' }}>{getText('Net', 'शुद्ध')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -208,7 +210,7 @@ const MonthlyReport = () => {
             <TableRow sx={{ bgcolor: 'action.hover' }}>
               <TableCell colSpan={2}>
                 <Typography variant="body2" fontWeight="bold" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>
-                  Total
+                  {getText('Total', 'कुल')}
                 </Typography>
               </TableCell>
               <TableCell align="center">

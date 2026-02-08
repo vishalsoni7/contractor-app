@@ -15,6 +15,7 @@ import {
   Switch,
 } from '@mui/material';
 import { CurrencyRupee, Warning } from '@mui/icons-material';
+import { useLanguage } from '../../context/LanguageContext';
 import PhotoCapture from './PhotoCapture';
 
 const defaultWorker = {
@@ -32,6 +33,7 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
   const [formData, setFormData] = useState(defaultWorker);
   const [errors, setErrors] = useState({});
   const [showChildLabourWarning, setShowChildLabourWarning] = useState(false);
+  const { getText } = useLanguage();
 
   useEffect(() => {
     if (worker) {
@@ -106,7 +108,7 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {worker ? 'Edit Worker / कर्मचारी संपादित करें' : 'Add Worker / कर्मचारी जोड़ें'}
+        {worker ? getText('Edit Worker', 'कर्मचारी संपादित करें') : getText('Add Worker', 'कर्मचारी जोड़ें')}
       </DialogTitle>
       <DialogContent>
         {showChildLabourWarning && (
@@ -116,22 +118,35 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
             sx={{ mb: 2, mt: 1 }}
           >
             <Box>
-              <strong>Child Labour Warning / बाल श्रम चेतावनी</strong>
+              <strong>{getText('Child Labour Warning', 'बाल श्रम चेतावनी')}</strong>
             </Box>
             <Box sx={{ mt: 0.5 }}>
-              Employing workers under 18 years of age is illegal under Child Labour laws.
-            </Box>
-            <Box sx={{ mt: 0.5, fontSize: '0.85rem' }}>
-              18 वर्ष से कम आयु के श्रमिकों को नियुक्त करना बाल श्रम कानूनों के तहत अवैध है।
+              {getText(
+                'Employing workers under 18 years of age is illegal under Child Labour laws.',
+                '18 वर्ष से कम आयु के श्रमिकों को नियुक्त करना बाल श्रम कानूनों के तहत अवैध है।'
+              )}
             </Box>
           </Alert>
         )}
 
         <Grid container spacing={2} sx={{ mt: showChildLabourWarning ? 0 : 1 }}>
+          {/* Photo at the top */}
+          <Grid item xs={12}>
+            <PhotoCapture
+              photo={formData.photo}
+              photoLocation={formData.photoLocation}
+              onPhotoChange={handlePhotoChange}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+
           <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Name / नाम"
+              label={getText('Name', 'नाम')}
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -142,20 +157,20 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Age / उम्र"
+              label={getText('Age', 'उम्र')}
               name="age"
               type="number"
               value={formData.age}
               onChange={handleChange}
               error={!!errors.age || showChildLabourWarning}
-              helperText={errors.age || (showChildLabourWarning ? 'Must be 18 or older' : '')}
+              helperText={errors.age || (showChildLabourWarning ? getText('Must be 18 or older', '18 या अधिक होना चाहिए') : '')}
               inputProps={{ min: 18, max: 70 }}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Daily Wage / दैनिक मजदूरी"
+              label={getText('Daily Wage', 'दैनिक मजदूरी')}
               name="dailyWage"
               type="number"
               value={formData.dailyWage}
@@ -174,7 +189,7 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Start Time / शुरू का समय"
+              label={getText('Start Time', 'शुरू का समय')}
               name="workStartTime"
               type="time"
               value={formData.workStartTime}
@@ -187,7 +202,7 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="End Time / समाप्ति समय"
+              label={getText('End Time', 'समाप्ति समय')}
               name="workEndTime"
               type="time"
               value={formData.workEndTime}
@@ -215,34 +230,22 @@ const WorkerForm = ({ open, onClose, onSubmit, worker = null }) => {
                       color="success"
                     />
                   }
-                  label={formData.status === 'active' ? 'Active / सक्रिय' : 'Inactive / निष्क्रिय'}
+                  label={formData.status === 'active' ? getText('Active', 'सक्रिय') : getText('Inactive', 'निष्क्रिय')}
                 />
                 <Box sx={{ mt: 0.5 }}>
                   <small style={{ color: 'gray' }}>
-                    Inactive workers won't appear in attendance / निष्क्रिय कर्मचारी हाज़िरी में नहीं दिखेंगे
+                    {getText("Inactive workers won't appear in attendance", 'निष्क्रिय कर्मचारी हाज़िरी में नहीं दिखेंगे')}
                   </small>
                 </Box>
               </Grid>
             </>
           )}
-
-          <Grid item xs={12}>
-            <Divider sx={{ my: 1 }} />
-          </Grid>
-
-          <Grid item xs={12}>
-            <PhotoCapture
-              photo={formData.photo}
-              photoLocation={formData.photoLocation}
-              onPhotoChange={handlePhotoChange}
-            />
-          </Grid>
         </Grid>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose}>Cancel / रद्द करें</Button>
+        <Button onClick={onClose}>{getText('Cancel', 'रद्द करें')}</Button>
         <Button variant="contained" onClick={handleSubmit}>
-          {worker ? 'Update / अपडेट करें' : 'Add / जोड़ें'}
+          {worker ? getText('Update', 'अपडेट करें') : getText('Add', 'जोड़ें')}
         </Button>
       </DialogActions>
     </Dialog>

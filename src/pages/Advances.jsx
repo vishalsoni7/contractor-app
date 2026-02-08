@@ -12,9 +12,10 @@ import {
 import { Add } from '@mui/icons-material';
 import { useAdvances } from '../context/AdvanceContext';
 import { useWorkers } from '../context/WorkerContext';
+import { useLanguage } from '../context/LanguageContext';
 import AdvanceForm from '../components/Advances/AdvanceForm';
 import AdvanceList from '../components/Advances/AdvanceList';
-import { getCurrentMonth, getCurrentYear, getMonthName } from '../utils/dateUtils';
+import { getCurrentMonth, getCurrentYear, getMonthName, getMonthNameHindi } from '../utils/dateUtils';
 
 const Advances = () => {
   const theme = useTheme();
@@ -22,6 +23,7 @@ const Advances = () => {
   const [formOpen, setFormOpen] = useState(false);
   const { advances, getAdvancesForMonth } = useAdvances();
   const { workers } = useWorkers();
+  const { getText, isEnglish, isHindi } = useLanguage();
 
   const currentMonth = getCurrentMonth();
   const currentYear = getCurrentYear();
@@ -30,11 +32,17 @@ const Advances = () => {
   const totalAdvances = advances.reduce((sum, a) => sum + a.amount, 0);
   const thisMonthTotal = monthlyAdvances.reduce((sum, a) => sum + a.amount, 0);
 
+  const getMonthDisplay = () => {
+    if (isEnglish) return getMonthName(currentMonth);
+    if (isHindi) return getMonthNameHindi(currentMonth);
+    return `${getMonthName(currentMonth)} / ${getMonthNameHindi(currentMonth)}`;
+  };
+
   return (
     <Box sx={{ pb: isMobile ? 8 : 0 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">
-          Advances / अग्रिम
+          {getText('Advances', 'अग्रिम')}
         </Typography>
         {!isMobile && (
           <Button
@@ -42,7 +50,7 @@ const Advances = () => {
             startIcon={<Add />}
             onClick={() => setFormOpen(true)}
           >
-            Record Advance / अग्रिम दर्ज करें
+            {getText('Record Advance', 'अग्रिम दर्ज करें')}
           </Button>
         )}
       </Box>
@@ -55,7 +63,7 @@ const Advances = () => {
                 ₹{totalAdvances.toLocaleString()}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Total Advances / कुल अग्रिम
+                {getText('Total Advances', 'कुल अग्रिम')}
               </Typography>
             </CardContent>
           </Card>
@@ -67,7 +75,7 @@ const Advances = () => {
                 ₹{thisMonthTotal.toLocaleString()}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {getMonthName(currentMonth)} / इस महीने
+                {getMonthDisplay()}
               </Typography>
             </CardContent>
           </Card>
@@ -79,7 +87,7 @@ const Advances = () => {
                 {advances.length}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Total Records / कुल रिकॉर्ड
+                {getText('Total Records', 'कुल रिकॉर्ड')}
               </Typography>
             </CardContent>
           </Card>
@@ -87,7 +95,7 @@ const Advances = () => {
       </Grid>
 
       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-        All Advances / सभी अग्रिम
+        {getText('All Advances', 'सभी अग्रिम')}
       </Typography>
 
       <AdvanceList />
@@ -113,7 +121,7 @@ const Advances = () => {
             startIcon={<Add />}
             onClick={() => setFormOpen(true)}
           >
-            Record Advance / अग्रिम दर्ज करें
+            {getText('Record Advance', 'अग्रिम दर्ज करें')}
           </Button>
         </Box>
       )}

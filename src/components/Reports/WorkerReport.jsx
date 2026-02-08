@@ -18,6 +18,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useWorkers } from '../../context/WorkerContext';
 import { useAttendance } from '../../context/AttendanceContext';
 import { useAdvances } from '../../context/AdvanceContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { calculateOvertimePay } from '../../utils/calculations';
 import {
   getMonthDays,
@@ -33,6 +34,7 @@ const WorkerReport = () => {
   const { workers } = useWorkers();
   const { getAttendanceForWorker } = useAttendance();
   const { getTotalAdvancesForWorkerInMonth } = useAdvances();
+  const { getText } = useLanguage();
   const [selectedWorker, setSelectedWorker] = useState('');
   const [month, setMonth] = useState(getCurrentMonth());
   const [year, setYear] = useState(getCurrentYear());
@@ -49,7 +51,6 @@ const WorkerReport = () => {
   const monthStats = {
     present: monthlyAttendance.filter(a => a.status === 'present').length,
     absent: monthlyAttendance.filter(a => a.status === 'absent').length,
-    leave: monthlyAttendance.filter(a => a.status === 'leave').length,
     overtimeHours: monthlyAttendance.reduce((sum, a) => sum + (a.overtimeHours || 0), 0),
   };
 
@@ -93,7 +94,6 @@ const WorkerReport = () => {
     switch (status) {
       case 'present': return 'success.main';
       case 'absent': return 'error.main';
-      case 'leave': return 'warning.main';
       default: return 'grey.300';
     }
   };
@@ -102,7 +102,6 @@ const WorkerReport = () => {
     if (!status) return '';
     if (status === 'present') return overtime > 0 ? `P+${overtime}` : 'P';
     if (status === 'absent') return 'A';
-    if (status === 'leave') return 'L';
     return '';
   };
 
@@ -113,10 +112,10 @@ const WorkerReport = () => {
     <Box>
       <Box sx={{ mb: 3 }}>
         <FormControl size="small" sx={{ width: isMobile ? '100%' : 200, mb: 2 }}>
-          <InputLabel>Select Worker / कर्मचारी चुनें</InputLabel>
+          <InputLabel>{getText('Select Worker', 'कर्मचारी चुनें')}</InputLabel>
           <Select
             value={selectedWorker}
-            label="Select Worker / कर्मचारी चुनें"
+            label={getText('Select Worker', 'कर्मचारी चुनें')}
             onChange={(e) => setSelectedWorker(e.target.value)}
           >
             {workers.map(w => (
@@ -254,7 +253,7 @@ const WorkerReport = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 1,
-                        bgcolor: status ? getStatusColor(status) : 'grey.100',
+                        bgcolor: status ? getStatusColor(status) : 'action.hover',
                         border: isToday ? 2 : 1,
                         borderColor: isToday ? 'primary.main' : 'divider',
                         position: 'relative',
@@ -262,8 +261,8 @@ const WorkerReport = () => {
                     >
                       <Typography
                         variant="body2"
-                        fontWeight={status ? 'bold' : 'normal'}
-                        color={status ? 'white' : 'text.secondary'}
+                        fontWeight={status ? 'bold' : 'medium'}
+                        color={status ? 'white' : 'text.primary'}
                       >
                         {day.getDate()}
                       </Typography>
@@ -286,19 +285,15 @@ const WorkerReport = () => {
             <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Box sx={{ width: 16, height: 16, bgcolor: 'success.main', borderRadius: 0.5 }} />
-                <Typography variant="caption">Present</Typography>
+                <Typography variant="caption">{getText('Present', 'उपस्थित')}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Box sx={{ width: 16, height: 16, bgcolor: 'error.main', borderRadius: 0.5 }} />
-                <Typography variant="caption">Absent</Typography>
+                <Typography variant="caption">{getText('Absent', 'अनुपस्थित')}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Box sx={{ width: 16, height: 16, bgcolor: 'warning.main', borderRadius: 0.5 }} />
-                <Typography variant="caption">Leave</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Box sx={{ width: 16, height: 16, bgcolor: 'grey.100', border: 1, borderColor: 'divider', borderRadius: 0.5 }} />
-                <Typography variant="caption">Not Marked</Typography>
+                <Box sx={{ width: 16, height: 16, bgcolor: 'action.hover', border: 1, borderColor: 'divider', borderRadius: 0.5 }} />
+                <Typography variant="caption">{getText('Not Marked', 'चिह्नित नहीं')}</Typography>
               </Box>
             </Box>
           </Paper>
@@ -308,10 +303,7 @@ const WorkerReport = () => {
       {!selectedWorker && (
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography color="text.secondary">
-            Select a worker to view their report
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            रिपोर्ट देखने के लिए एक कर्मचारी चुनें
+            {getText('Select a worker to view their report', 'रिपोर्ट देखने के लिए एक कर्मचारी चुनें')}
           </Typography>
         </Box>
       )}

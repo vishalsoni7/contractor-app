@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import { showToast, getToastMessage, getToast } from '../utils/toast';
 import { authAPI, setToken, removeToken } from '../utils/api';
 
 const AuthContext = createContext(null);
@@ -34,13 +34,13 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         setToken(result.token);
         setContractor(result.contractor);
-        toast.success(`Welcome back, ${result.contractor.name}!`);
+        showToast.success(getToastMessage(`Welcome back, ${result.contractor.name}!`, `स्वागत है, ${result.contractor.name}!`));
         return { success: true };
       }
-      toast.error('Login failed');
+      showToast.error(getToastMessage('Login failed', 'लॉगिन विफल'));
       return { success: false, error: 'Login failed' };
     } catch (error) {
-      toast.error(error.message || 'Login failed');
+      showToast.error(error.message || getToastMessage('Login failed', 'लॉगिन विफल'));
       return { success: false, error: error.message };
     }
   };
@@ -52,13 +52,13 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         setToken(result.token);
         setContractor(result.contractor);
-        toast.success('Account created successfully!');
+        showToast.success(getToastMessage('Account created successfully!', 'खाता सफलतापूर्वक बनाया गया!'));
         return { success: true };
       }
-      toast.error('Registration failed');
+      showToast.error(getToastMessage('Registration failed', 'पंजीकरण विफल'));
       return { success: false, error: 'Registration failed' };
     } catch (error) {
-      toast.error(error.message || 'Registration failed');
+      showToast.error(error.message || getToastMessage('Registration failed', 'पंजीकरण विफल'));
       return { success: false, error: error.message };
     }
   };
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     removeToken();
     setContractor(null);
-    toast.success('Logged out / लॉग आउट');
+    showToast.success(getToast('LOGGED_OUT'));
   };
 
   // Update profile
@@ -75,10 +75,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await authAPI.updateProfile(updates);
       setContractor(result);
-      toast.success('Profile updated / प्रोफ़ाइल अपडेट');
+      showToast.success(getToast('PROFILE_UPDATED'));
       return { success: true };
     } catch (error) {
-      toast.error('Failed to update profile');
+      showToast.error(getToast('PROFILE_UPDATE_FAILED'));
       return { success: false, error: error.message };
     }
   };

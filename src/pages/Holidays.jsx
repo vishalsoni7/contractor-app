@@ -10,11 +10,13 @@ import { Add } from '@mui/icons-material';
 import HolidayList from '../components/Holidays/HolidayList';
 import HolidayForm from '../components/Holidays/HolidayForm';
 import { useAttendance } from '../context/AttendanceContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const Holidays = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { addHoliday } = useAttendance();
+  const { getText } = useLanguage();
   const [formOpen, setFormOpen] = useState(false);
 
   const handleAdd = (data) => {
@@ -25,7 +27,7 @@ const Holidays = () => {
     <Box sx={{ pb: isMobile ? 8 : 0 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">
-          Holidays / छुट्टियां
+          {getText('Holidays', 'छुट्टियां')}
         </Typography>
         {!isMobile && (
           <Button
@@ -33,7 +35,7 @@ const Holidays = () => {
             startIcon={<Add />}
             onClick={() => setFormOpen(true)}
           >
-            Add Holiday / जोड़ें
+            {getText('Add Holiday', 'छुट्टी जोड़ें')}
           </Button>
         )}
       </Box>
@@ -61,7 +63,7 @@ const Holidays = () => {
             startIcon={<Add />}
             onClick={() => setFormOpen(true)}
           >
-            Add Holiday / छुट्टी जोड़ें
+            {getText('Add Holiday', 'छुट्टी जोड़ें')}
           </Button>
         </Box>
       )}

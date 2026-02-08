@@ -10,12 +10,14 @@ import {
   Chip,
   Dialog,
   DialogContent,
+  Stack,
 } from '@mui/material';
 import {
   CameraAlt,
   Delete,
   LocationOn,
   ZoomIn,
+  PhotoLibrary,
 } from '@mui/icons-material';
 
 const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
@@ -23,7 +25,8 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
   const [error, setError] = useState('');
   const [gettingLocation, setGettingLocation] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
 
   const formatDateTime = (date) => {
     const options = {
@@ -43,11 +46,10 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const maxSize = 800; // Larger size for better quality with overlay
+        const maxSize = 800;
         let width = img.width;
         let height = img.height;
 
-        // Scale image
         if (width > height) {
           if (width > maxSize) {
             height = (height * maxSize) / width;
@@ -64,10 +66,8 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
 
-        // Draw the original image
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Create overlay at the bottom
         const overlayHeight = Math.min(120, height * 0.25);
         const gradient = ctx.createLinearGradient(0, height - overlayHeight - 20, 0, height);
         gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
@@ -77,7 +77,6 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
         ctx.fillStyle = gradient;
         ctx.fillRect(0, height - overlayHeight - 20, width, overlayHeight + 20);
 
-        // Set text styles
         ctx.fillStyle = 'white';
         ctx.textAlign = 'left';
 
@@ -85,7 +84,6 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
         const lineHeight = 18;
         let yPos = height - overlayHeight + 10;
 
-        // App branding
         ctx.font = 'bold 16px Arial';
         ctx.fillStyle = '#4CAF50';
         ctx.fillText('Kaamgar', padding, yPos);
@@ -96,20 +94,16 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
 
         yPos += lineHeight + 4;
 
-        // Date and time
         ctx.font = '12px Arial';
         ctx.fillStyle = 'white';
         const dateTime = formatDateTime(new Date());
         ctx.fillText(dateTime, padding, yPos);
         yPos += lineHeight;
 
-        // Location info
         if (location) {
-          // Coordinates
           ctx.font = '11px Arial';
           ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
 
-          // Location icon simulation (circle with dot)
           ctx.fillStyle = '#4CAF50';
           ctx.beginPath();
           ctx.arc(padding + 6, yPos - 4, 6, 0, Math.PI * 2);
@@ -127,7 +121,6 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
           );
           yPos += lineHeight;
 
-          // Accuracy
           if (location.accuracy) {
             ctx.font = '10px Arial';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
@@ -139,13 +132,11 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
           ctx.fillText('Location not available', padding, yPos);
         }
 
-        // Watermark on right side
         ctx.textAlign = 'right';
         ctx.font = 'bold 10px Arial';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.fillText('GPS Verified', width - padding, height - padding);
 
-        // Convert to base64
         const geoTaggedBase64 = canvas.toDataURL('image/jpeg', 0.85);
         resolve(geoTaggedBase64);
       };
@@ -186,7 +177,6 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
     setError('');
 
     try {
-      // First, get location
       setGettingLocation(true);
       let location = null;
       try {
@@ -196,11 +186,9 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
       }
       setGettingLocation(false);
 
-      // Read the file
       const reader = new FileReader();
       reader.onload = async (event) => {
         try {
-          // Create geo-tagged image with overlay
           const geoTaggedPhoto = await createGeoTaggedImage(event.target.result, location);
           onPhotoChange(geoTaggedPhoto, location);
         } catch (err) {
@@ -223,10 +211,6 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
     onPhotoChange(null, null);
   };
 
-  const handleCaptureClick = () => {
-    fileInputRef.current?.click();
-  };
-
   return (
     <Box>
       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -239,58 +223,86 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
         </Alert>
       )}
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        {photo ? (
-          <Box sx={{ position: 'relative' }}>
-            <Avatar
-              src={photo}
-              sx={{ width: 100, height: 100, cursor: 'pointer' }}
-              onClick={() => setPreviewOpen(true)}
-            />
-            <IconButton
-              size="small"
-              sx={{
-                position: 'absolute',
-                bottom: -4,
-                right: -4,
-                bgcolor: 'primary.main',
-                color: 'white',
-                '&:hover': { bgcolor: 'primary.dark' },
-                width: 24,
-                height: 24,
-              }}
-              onClick={() => setPreviewOpen(true)}
-            >
-              <ZoomIn sx={{ fontSize: 14 }} />
-            </IconButton>
-          </Box>
-        ) : (
-          <Avatar sx={{ width: 100, height: 100, bgcolor: 'grey.300' }}>
-            <CameraAlt sx={{ fontSize: 36, color: 'grey.500' }} />
-          </Avatar>
-        )}
-
-        <Box sx={{ flex: 1 }}>
-          {!photo ? (
-            <Button
-              variant="outlined"
-              startIcon={loading ? <CircularProgress size={16} /> : <CameraAlt />}
-              onClick={handleCaptureClick}
-              disabled={loading}
-              size="small"
-            >
-              {loading ? 'Processing...' : 'Capture Photo'}
-            </Button>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        {/* Photo Preview */}
+        <Box sx={{ position: 'relative' }}>
+          {photo ? (
+            <>
+              <Avatar
+                src={photo}
+                sx={{
+                  width: 120,
+                  height: 120,
+                  cursor: 'pointer',
+                  border: 3,
+                  borderColor: 'primary.main',
+                }}
+                onClick={() => setPreviewOpen(true)}
+              />
+              <IconButton
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  '&:hover': { bgcolor: 'primary.dark' },
+                }}
+                onClick={() => setPreviewOpen(true)}
+              >
+                <ZoomIn sx={{ fontSize: 16 }} />
+              </IconButton>
+            </>
           ) : (
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Avatar sx={{ width: 120, height: 120, bgcolor: 'grey.200' }}>
+              <CameraAlt sx={{ fontSize: 48, color: 'grey.400' }} />
+            </Avatar>
+          )}
+        </Box>
+
+        {/* Action Buttons */}
+        <Stack direction="row" spacing={1}>
+          {!photo ? (
+            <>
+              <Button
+                variant="contained"
+                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <CameraAlt />}
+                onClick={() => cameraInputRef.current?.click()}
+                disabled={loading}
+                size="small"
+              >
+                Camera
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={loading ? <CircularProgress size={16} /> : <PhotoLibrary />}
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={loading}
+                size="small"
+              >
+                Gallery
+              </Button>
+            </>
+          ) : (
+            <>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<CameraAlt />}
-                onClick={handleCaptureClick}
+                onClick={() => cameraInputRef.current?.click()}
                 disabled={loading}
               >
                 Retake
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PhotoLibrary />}
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={loading}
+              >
+                Gallery
               </Button>
               <IconButton
                 color="error"
@@ -299,52 +311,61 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
               >
                 <Delete />
               </IconButton>
-            </Box>
+            </>
           )}
+        </Stack>
 
-          {gettingLocation && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <CircularProgress size={14} />
-              <Typography variant="caption" color="text.secondary">
-                Getting GPS location...
-              </Typography>
-            </Box>
-          )}
+        {/* Status Messages */}
+        {gettingLocation && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CircularProgress size={14} />
+            <Typography variant="caption" color="text.secondary">
+              Getting GPS location...
+            </Typography>
+          </Box>
+        )}
 
-          {loading && !gettingLocation && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <CircularProgress size={14} />
-              <Typography variant="caption" color="text.secondary">
-                Adding GPS stamp...
-              </Typography>
-            </Box>
-          )}
+        {loading && !gettingLocation && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CircularProgress size={14} />
+            <Typography variant="caption" color="text.secondary">
+              Adding GPS stamp...
+            </Typography>
+          </Box>
+        )}
 
-          {photoLocation && !loading && (
-            <Box sx={{ mt: 1 }}>
-              <Chip
-                icon={<LocationOn />}
-                label={`${photoLocation.latitude.toFixed(4)}, ${photoLocation.longitude.toFixed(4)}`}
-                size="small"
-                color="success"
-                variant="outlined"
-              />
-            </Box>
-          )}
-        </Box>
+        {photoLocation && !loading && (
+          <Chip
+            icon={<LocationOn />}
+            label={`${photoLocation.latitude.toFixed(4)}, ${photoLocation.longitude.toFixed(4)}`}
+            size="small"
+            color="success"
+            variant="outlined"
+          />
+        )}
       </Box>
 
+      {/* Hidden file inputs */}
       <input
-        ref={fileInputRef}
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
 
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-        Photo will include GPS coordinates & timestamp / फोटो में GPS और समय शामिल होगा
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
+        Photo will include GPS coordinates & timestamp
+        <br />
+        फोटो में GPS और समय शामिल होगा
       </Typography>
 
       {/* Full size preview dialog */}

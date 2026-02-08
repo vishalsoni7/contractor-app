@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import { showToast, getToastMessage, getToast } from '../utils/toast';
 import { attendanceAPI, holidaysAPI } from '../utils/api';
 import { useAuth } from './AuthContext';
 
@@ -52,12 +52,12 @@ export const AttendanceProvider = ({ children }) => {
       // Refresh attendance data from server to ensure consistency
       await fetchAttendance();
 
-      const statusLabel = status === 'present' ? 'Present ✓' : status === 'absent' ? 'Absent ✗' : 'Leave';
-      toast.success(`Marked ${statusLabel}`);
+      const statusLabel = status === 'present' ? 'Present ✓' : 'Absent ✗';
+      showToast.success(`Marked ${statusLabel}`);
 
       return { success: true, record };
     } catch (err) {
-      toast.error('Failed to mark attendance');
+      showToast.error('Failed to mark attendance');
       return { success: false, error: err.message };
     }
   };
@@ -66,8 +66,10 @@ export const AttendanceProvider = ({ children }) => {
     try {
       const result = await attendanceAPI.bulkMark(records);
       await fetchAttendance(); // Refresh attendance data
+      showToast.success(getToastMessage(`${records.length} workers marked`, `${records.length} कर्मचारी चिह्नित`));
       return { success: true, result };
     } catch (err) {
+      showToast.error(getToast('ATTENDANCE_FAILED'));
       return { success: false, error: err.message };
     }
   };
@@ -99,10 +101,10 @@ export const AttendanceProvider = ({ children }) => {
     try {
       const newHoliday = await holidaysAPI.create(holidayData);
       setHolidays(prev => [...prev, newHoliday]);
-      toast.success('Holiday added / छुट्टी जोड़ी गई');
+      showToast.success(getToast('HOLIDAY_ADDED'));
       return { success: true, holiday: newHoliday };
     } catch (err) {
-      toast.error('Failed to add holiday');
+      showToast.error(getToast('HOLIDAY_ADD_FAILED'));
       return { success: false, error: err.message };
     }
   };
@@ -111,10 +113,10 @@ export const AttendanceProvider = ({ children }) => {
     try {
       await holidaysAPI.delete(id);
       setHolidays(prev => prev.filter(h => h.id !== id));
-      toast.success('Holiday deleted / छुट्टी हटाई गई');
+      showToast.success(getToast('HOLIDAY_DELETED'));
       return { success: true };
     } catch (err) {
-      toast.error('Failed to delete holiday');
+      showToast.error(getToast('HOLIDAY_DELETE_FAILED'));
       return { success: false, error: err.message };
     }
   };

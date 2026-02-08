@@ -15,43 +15,25 @@ import {
   EventAvailable,
   CalendarMonth,
   Assessment,
-  // Brightness4,
-  // Brightness7,
   Person,
   AccountBalanceWallet,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useThemeMode } from '../../context/ThemeContext';
-
-const menuItems = [
-  { text: 'Dashboard / डैशबोर्ड', icon: <Dashboard />, path: '/dashboard' },
-  {
-    text: 'Reports / रिपोर्ट',
-    icon: <Assessment />,
-    path: '/dashboard/reports',
-  },
-  {
-    text: 'Attendance / हाज़िरी',
-    icon: <EventAvailable />,
-    path: '/dashboard/attendance',
-  },
-  { text: 'Workers / कर्मचारी', icon: <People />, path: '/dashboard/workers' },
-  {
-    text: 'Advances / अग्रिम',
-    icon: <AccountBalanceWallet />,
-    path: '/dashboard/advances',
-  },
-  {
-    text: 'Holidays / छुट्टियां',
-    icon: <CalendarMonth />,
-    path: '/dashboard/holidays',
-  },
-];
+import { useLanguage } from '../../context/LanguageContext';
 
 const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // const { mode, toggleTheme } = useThemeMode();
+  const { getText } = useLanguage();
+
+  const menuItems = [
+    { text: getText('Dashboard', 'डैशबोर्ड'), icon: <Dashboard />, path: '/dashboard' },
+    { text: getText('Reports', 'रिपोर्ट'), icon: <Assessment />, path: '/dashboard/reports' },
+    { text: getText('Attendance', 'हाज़िरी'), icon: <EventAvailable />, path: '/dashboard/attendance' },
+    { text: getText('Workers', 'कर्मचारी'), icon: <People />, path: '/dashboard/workers' },
+    { text: getText('Advances', 'अग्रिम'), icon: <AccountBalanceWallet />, path: '/dashboard/advances' },
+    { text: getText('Holidays', 'छुट्टियां'), icon: <CalendarMonth />, path: '/dashboard/holidays' },
+  ];
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -82,7 +64,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
           Kaamgar
         </Typography>
         <Typography variant='caption' color='text.secondary'>
-          कामगार - Contractor Management
+          {getText('Contractor Management', 'कामगार - ठेकेदार प्रबंधन')}
         </Typography>
       </Box>
       <Divider />
@@ -161,7 +143,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
           >
             <Person />
           </ListItemIcon>
-          <ListItemText primary='Profile / प्रोफाइल' />
+          <ListItemText primary={getText('Profile', 'प्रोफ़ाइल')} />
         </ListItemButton>
       </Box>
     </Box>

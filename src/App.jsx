@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkerProvider } from './context/WorkerContext';
 import { AttendanceProvider } from './context/AttendanceContext';
 import { AdvanceProvider } from './context/AdvanceContext';
+import CustomToaster from './components/Common/CustomToaster';
 import AppLayout from './components/Layout/AppLayout';
 import Login from './pages/Login';
 import LandingPage from './pages/LandingPage';
@@ -127,41 +128,22 @@ const AppRoutes = () => {
 function App() {
   return (
     <ThemeProvider>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <AuthProvider>
-          <WorkerProvider>
-            <AttendanceProvider>
-              <AdvanceProvider>
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-                <Toaster
-                  position="top-center"
-                  toastOptions={{
-                    duration: 3000,
-                    style: {
-                      borderRadius: '8px',
-                      padding: '12px 16px',
-                    },
-                    success: {
-                      iconTheme: {
-                        primary: '#4caf50',
-                        secondary: '#fff',
-                      },
-                    },
-                    error: {
-                      iconTheme: {
-                        primary: '#f44336',
-                        secondary: '#fff',
-                      },
-                    },
-                  }}
-                />
-              </AdvanceProvider>
-            </AttendanceProvider>
-          </WorkerProvider>
-        </AuthProvider>
-      </LocalizationProvider>
+      <LanguageProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <AuthProvider>
+            <WorkerProvider>
+              <AttendanceProvider>
+                <AdvanceProvider>
+                  <BrowserRouter>
+                    <AppRoutes />
+                  </BrowserRouter>
+                  <CustomToaster />
+                </AdvanceProvider>
+              </AttendanceProvider>
+            </WorkerProvider>
+          </AuthProvider>
+        </LocalizationProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

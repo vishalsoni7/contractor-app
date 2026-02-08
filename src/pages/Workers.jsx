@@ -16,11 +16,13 @@ import WorkerList from '../components/Workers/WorkerList';
 import WorkerForm from '../components/Workers/WorkerForm';
 import WorkerDetails from '../components/Workers/WorkerDetails';
 import { useWorkers } from '../context/WorkerContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const Workers = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { addWorker, updateWorker, deleteWorker, getWorker } = useWorkers();
+  const { getText } = useLanguage();
   const [formOpen, setFormOpen] = useState(false);
   const [editWorker, setEditWorker] = useState(null);
   const [detailsWorker, setDetailsWorker] = useState(null);
@@ -71,7 +73,7 @@ const Workers = () => {
     <Box sx={{ pb: isMobile ? 8 : 0 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">
-          Workers / कर्मचारी
+          {getText('Workers', 'कर्मचारी')}
         </Typography>
         {!isMobile && (
           <Button
@@ -79,7 +81,7 @@ const Workers = () => {
             startIcon={<Add />}
             onClick={handleAdd}
           >
-            Add Worker / जोड़ें
+            {getText('Add Worker', 'कर्मचारी जोड़ें')}
           </Button>
         )}
       </Box>
@@ -111,7 +113,7 @@ const Workers = () => {
             startIcon={<Add />}
             onClick={handleAdd}
           >
-            Add Worker / कर्मचारी जोड़ें
+            {getText('Add Worker', 'कर्मचारी जोड़ें')}
           </Button>
         </Box>
       )}
@@ -133,21 +135,18 @@ const Workers = () => {
       />
 
       <Dialog open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
-        <DialogTitle>Confirm Delete / हटाने की पुष्टि करें</DialogTitle>
+        <DialogTitle>{getText('Confirm Delete', 'हटाने की पुष्टि करें')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete this worker?
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            क्या आप वाकई इस कर्मचारी को हटाना चाहते हैं?
+            {getText('Are you sure you want to delete this worker?', 'क्या आप वाकई इस कर्मचारी को हटाना चाहते हैं?')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteConfirm(null)}>
-            Cancel / रद्द करें
+            {getText('Cancel', 'रद्द करें')}
           </Button>
           <Button color="error" variant="contained" onClick={confirmDelete}>
-            Delete / हटाएं
+            {getText('Delete', 'हटाएं')}
           </Button>
         </DialogActions>
       </Dialog>

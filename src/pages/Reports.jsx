@@ -1,45 +1,17 @@
-import { useState } from 'react';
-import {
-  Box,
-  Typography,
-  Tabs,
-  Tab,
-  Paper,
-} from '@mui/material';
-import { Person, Assessment } from '@mui/icons-material';
+import { Box, Typography } from '@mui/material';
 import WorkerReport from '../components/Reports/WorkerReport';
-import MonthlyReport from '../components/Reports/MonthlyReport';
+import { useLanguage } from '../context/LanguageContext';
 
 const Reports = () => {
-  const [tab, setTab] = useState(0);
+  const { getText } = useLanguage();
 
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Reports / रिपोर्ट
+        {getText('Worker Report', 'कर्मचारी रिपोर्ट')}
       </Typography>
 
-      <Paper sx={{ mb: 3 }}>
-        <Tabs
-          value={tab}
-          onChange={(e, newValue) => setTab(newValue)}
-          variant="fullWidth"
-        >
-          <Tab
-            icon={<Person />}
-            label="Worker Report / कर्मचारी"
-            iconPosition="start"
-          />
-          <Tab
-            icon={<Assessment />}
-            label="Monthly Summary / मासिक"
-            iconPosition="start"
-          />
-        </Tabs>
-      </Paper>
-
-      {tab === 0 && <WorkerReport />}
-      {tab === 1 && <MonthlyReport />}
+      <WorkerReport />
     </Box>
   );
 };

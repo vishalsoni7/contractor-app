@@ -14,11 +14,15 @@ import { Search } from '@mui/icons-material';
 import WorkerCard from './WorkerCard';
 import { useWorkers } from '../../context/WorkerContext';
 import { useAttendance } from '../../context/AttendanceContext';
+import { useAdvances } from '../../context/AdvanceContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { getWorkerStats } from '../../utils/calculations';
 
 const WorkerList = ({ onEdit, onDelete, onToggleStatus }) => {
   const { workers } = useWorkers();
   const { attendance } = useAttendance();
+  const { getTotalAdvancesForWorker } = useAdvances();
+  const { getText } = useLanguage();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -40,10 +44,7 @@ const WorkerList = ({ onEdit, onDelete, onToggleStatus }) => {
         }}
       >
         <Typography variant="h6" color="text.secondary" gutterBottom>
-          No workers added yet
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          कोई कर्मचारी अभी तक नहीं जोड़ा गया
+          {getText('No workers added yet', 'कोई कर्मचारी अभी तक नहीं जोड़ा गया')}
         </Typography>
       </Box>
     );
@@ -54,7 +55,7 @@ const WorkerList = ({ onEdit, onDelete, onToggleStatus }) => {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <TextField
           size="small"
-          placeholder="Search workers / कर्मचारी खोजें"
+          placeholder={getText('Search workers', 'कर्मचारी खोजें')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           InputProps={{
@@ -67,36 +68,42 @@ const WorkerList = ({ onEdit, onDelete, onToggleStatus }) => {
           sx={{ minWidth: 250 }}
         />
         <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
+          <InputLabel>{getText('Status', 'स्थिति')}</InputLabel>
           <Select
             value={statusFilter}
-            label="Status"
+            label={getText('Status', 'स्थिति')}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <MenuItem value="all">All / सभी</MenuItem>
-            <MenuItem value="active">Active / सक्रिय</MenuItem>
-            <MenuItem value="inactive">Inactive / निष्क्रिय</MenuItem>
+            <MenuItem value="all">{getText('All', 'सभी')}</MenuItem>
+            <MenuItem value="active">{getText('Active', 'सक्रिय')}</MenuItem>
+            <MenuItem value="inactive">{getText('Inactive', 'निष्क्रिय')}</MenuItem>
           </Select>
         </FormControl>
       </Box>
 
       <Grid container spacing={2}>
-        {filteredWorkers.map(worker => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={worker.id}>
-            <WorkerCard
-              worker={worker}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onToggleStatus={onToggleStatus}
-              stats={getWorkerStats(worker, attendance)}
-            />
-          </Grid>
-        ))}
+        {filteredWorkers.map(worker => {
+          const workerStats = getWorkerStats(worker, attendance);
+          const totalAdvances = getTotalAdvancesForWorker(worker.id);
+          
+          return (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={worker.id}>
+              <WorkerCard
+                worker={worker}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
+                stats={workerStats}
+                totalAdvances={totalAdvances}
+              />
+            </Grid>
+          );
+        })}
       </Grid>
 
       {filteredWorkers.length === 0 && workers.length > 0 && (
         <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
-          No workers match your search / आपकी खोज से कोई कर्मचारी मेल नहीं खाता
+          {getText('No workers match your search', 'आपकी खोज से कोई कर्मचारी मेल नहीं खाता')}
         </Typography>
       )}
     </Box>

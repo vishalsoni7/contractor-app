@@ -56,7 +56,6 @@ const AttendanceCalendar = () => {
     switch (status) {
       case 'present': return 'success.light';
       case 'absent': return 'error.light';
-      case 'leave': return 'warning.light';
       case 'holiday': return 'info.light';
       default: return 'background.paper';
     }
@@ -116,7 +115,6 @@ const AttendanceCalendar = () => {
       <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
         <Chip label="Present" size="small" sx={{ bgcolor: 'success.light' }} />
         <Chip label="Absent" size="small" sx={{ bgcolor: 'error.light' }} />
-        <Chip label="Leave" size="small" sx={{ bgcolor: 'warning.light' }} />
         <Chip label="Holiday" size="small" sx={{ bgcolor: 'info.light' }} />
       </Box>
 
