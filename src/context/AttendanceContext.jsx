@@ -49,8 +49,36 @@ export const AttendanceProvider = ({ children }) => {
     try {
       const record = await attendanceAPI.mark({ workerId, date, status, overtimeHours });
 
-      // Refresh attendance data from server to ensure consistency
-      await fetchAttendance();
+      // Update local state immediately for instant UI feedback
+      setAttendance(prev => {
+        const existingIndex = prev.findIndex(
+          a => String(a.workerId) === String(workerId) && a.date === date
+        );
+        if (existingIndex >= 0) {
+          // Update existing record
+          const updated = [...prev];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            status,
+            overtimeHours,
+          };
+          return updated;
+        } else {
+          // Add new record with proper structure
+          return [
+            ...prev,
+            {
+              id: record.id || `temp-${Date.now()}-${workerId}`,
+              workerId: String(workerId),
+              contractorId: record.contractorId,
+              date,
+              status,
+              overtimeHours,
+              createdAt: record.createdAt || new Date().toISOString(),
+            },
+          ];
+        }
+      });
 
       const statusLabel = status === 'present' ? 'Present ✓' : 'Absent ✗';
       showToast.success(`Marked ${statusLabel}`);
@@ -65,7 +93,36 @@ export const AttendanceProvider = ({ children }) => {
   const bulkMarkAttendance = async (records) => {
     try {
       const result = await attendanceAPI.bulkMark(records);
-      await fetchAttendance(); // Refresh attendance data
+      
+      // Update local state immediately for instant UI feedback
+      setAttendance(prev => {
+        const updated = [...prev];
+        records.forEach(record => {
+          const existingIndex = updated.findIndex(
+            a => String(a.workerId) === String(record.workerId) && a.date === record.date
+          );
+          if (existingIndex >= 0) {
+            // Update existing record
+            updated[existingIndex] = {
+              ...updated[existingIndex],
+              status: record.status,
+              overtimeHours: record.overtimeHours,
+            };
+          } else {
+            // Add new record
+            updated.push({
+              id: `temp-${Date.now()}-${record.workerId}`,
+              workerId: String(record.workerId),
+              date: record.date,
+              status: record.status,
+              overtimeHours: record.overtimeHours,
+              createdAt: new Date().toISOString(),
+            });
+          }
+        });
+        return updated;
+      });
+
       showToast.success(getToastMessage(`${records.length} workers marked`, `${records.length} कर्मचारी चिह्नित`));
       return { success: true, result };
     } catch (err) {

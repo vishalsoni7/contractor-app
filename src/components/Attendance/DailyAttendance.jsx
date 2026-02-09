@@ -190,12 +190,12 @@ const DailyAttendance = () => {
   const holidayToday = isHoliday(selectedDate);
 
   const getWorkerStatus = (workerId) => {
-    const record = dayAttendance.find(a => a.workerId === workerId);
+    const record = dayAttendance.find(a => String(a.workerId) === String(workerId));
     return record?.status || null;
   };
 
   const getWorkerOvertime = (workerId) => {
-    const record = dayAttendance.find(a => a.workerId === workerId);
+    const record = dayAttendance.find(a => String(a.workerId) === String(workerId));
     return record?.overtimeHours || 0;
   };
 
