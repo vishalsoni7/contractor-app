@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useWorkers } from '../../context/WorkerContext';
 import { useAttendance } from '../../context/AttendanceContext';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   getMonthDays,
   getCurrentMonth,
@@ -33,6 +34,7 @@ const AttendanceCalendar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { workers } = useWorkers();
   const { getAttendanceForWorker, holidays } = useAttendance();
+  const { getText } = useLanguage();
   const [selectedWorker, setSelectedWorker] = useState('');
   const [month, setMonth] = useState(getCurrentMonth());
   const [year, setYear] = useState(getCurrentYear());
@@ -84,12 +86,13 @@ const AttendanceCalendar = () => {
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
-        <FormControl size="small" sx={{ width: isMobile ? '100%' : 200, mb: 2 }}>
-          <InputLabel>Select Worker / कर्मचारी चुनें</InputLabel>
+        <FormControl size="small" sx={{ width: isMobile ? '100%' : 200, mb: 2 }} disabled={workers.length === 0}>
+          <InputLabel>{getText('Select Worker', 'कर्मचारी चुनें')}</InputLabel>
           <Select
             value={selectedWorker}
-            label="Select Worker / कर्मचारी चुनें"
+            label={getText('Select Worker', 'कर्मचारी चुनें')}
             onChange={(e) => setSelectedWorker(e.target.value)}
+            disabled={workers.length === 0}
           >
             {workers.map(worker => (
               <MenuItem key={worker.id} value={worker.id}>
@@ -100,22 +103,22 @@ const AttendanceCalendar = () => {
         </FormControl>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-          <IconButton onClick={handlePrevMonth} size="small">
+          <IconButton onClick={handlePrevMonth} size="small" disabled={workers.length === 0}>
             <ChevronLeft />
           </IconButton>
           <Typography variant="h6" sx={{ minWidth: 180, textAlign: 'center' }}>
-            {getMonthName(month)} {year} / {getMonthNameHindi(month)}
+            {getText(`${getMonthName(month)} ${year}`, `${getMonthNameHindi(month)} ${year}`)}
           </Typography>
-          <IconButton onClick={handleNextMonth} size="small">
+          <IconButton onClick={handleNextMonth} size="small" disabled={workers.length === 0}>
             <ChevronRight />
           </IconButton>
         </Box>
       </Box>
 
       <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-        <Chip label="Present" size="small" sx={{ bgcolor: 'success.light' }} />
-        <Chip label="Absent" size="small" sx={{ bgcolor: 'error.light' }} />
-        <Chip label="Holiday" size="small" sx={{ bgcolor: 'info.light' }} />
+        <Chip label={getText('Present', 'उपस्थित')} size="small" sx={{ bgcolor: 'success.light' }} />
+        <Chip label={getText('Absent', 'अनुपस्थित')} size="small" sx={{ bgcolor: 'error.light' }} />
+        <Chip label={getText('Holiday', 'छुट्टी')} size="small" sx={{ bgcolor: 'info.light' }} />
       </Box>
 
       <Paper sx={{ p: 2 }}>

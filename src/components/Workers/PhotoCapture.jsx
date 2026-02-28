@@ -19,8 +19,10 @@ import {
   ZoomIn,
   PhotoLibrary,
 } from '@mui/icons-material';
+import { useLanguage } from '../../context/LanguageContext';
 
 const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
+  const { getText } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [gettingLocation, setGettingLocation] = useState(false);
@@ -214,7 +216,7 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
   return (
     <Box>
       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-        Worker Photo with GPS / GPS के साथ कर्मचारी फोटो
+        {getText('Worker Photo with GPS', 'GPS के साथ कर्मचारी फोटो')}
       </Typography>
 
       {error && (
@@ -272,7 +274,7 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
                 disabled={loading}
                 size="small"
               >
-                Camera
+                {getText('Camera', 'कैमरा')}
               </Button>
               <Button
                 variant="outlined"
@@ -281,7 +283,7 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
                 disabled={loading}
                 size="small"
               >
-                Gallery
+                {getText('Gallery', 'गैलरी')}
               </Button>
             </>
           ) : (
@@ -293,7 +295,7 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
                 onClick={() => cameraInputRef.current?.click()}
                 disabled={loading}
               >
-                Retake
+                {getText('Retake', 'दोबारा लें')}
               </Button>
               <Button
                 variant="outlined"
@@ -302,7 +304,7 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
                 onClick={() => galleryInputRef.current?.click()}
                 disabled={loading}
               >
-                Gallery
+                {getText('Gallery', 'गैलरी')}
               </Button>
               <IconButton
                 color="error"
@@ -320,7 +322,7 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CircularProgress size={14} />
             <Typography variant="caption" color="text.secondary">
-              Getting GPS location...
+              {getText('Getting GPS location...', 'GPS स्थान प्राप्त हो रहा है...')}
             </Typography>
           </Box>
         )}
@@ -329,7 +331,7 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CircularProgress size={14} />
             <Typography variant="caption" color="text.secondary">
-              Adding GPS stamp...
+              {getText('Adding GPS stamp...', 'GPS स्टैम्प जोड़ रहे हैं...')}
             </Typography>
           </Box>
         )}
@@ -363,9 +365,7 @@ const PhotoCapture = ({ photo, photoLocation, onPhotoChange }) => {
       />
 
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
-        Photo will include GPS coordinates & timestamp
-        <br />
-        फोटो में GPS और समय शामिल होगा
+        {getText('Photo will include GPS coordinates & timestamp', 'फोटो में GPS और समय शामिल होगा')}
       </Typography>
 
       {/* Full size preview dialog */}

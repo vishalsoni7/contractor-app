@@ -55,14 +55,21 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose, isMobile }) => {
           borderColor: 'divider',
         }}
       >
-        <Typography
-          variant='h6'
-          color='primary'
-          fontWeight='bold'
-          textAlign='center'
-        >
-          Kaamgar
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <img
+            src='/fevicon.png'
+            alt='Kaamgar'
+            style={{ width: 32, height: 32 }}
+          />
+          <Typography
+            variant='h6'
+            color='primary'
+            fontWeight='bold'
+            textAlign='center'
+          >
+            Kaamgar
+          </Typography>
+        </Box>
         <Typography variant='caption' color='text.secondary'>
           {getText('Contractor Management', 'कामगार - ठेकेदार प्रबंधन')}
         </Typography>

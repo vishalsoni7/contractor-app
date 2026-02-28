@@ -15,11 +15,13 @@ import {
 } from '@mui/material';
 import { useWorkers } from '../../context/WorkerContext';
 import { useAdvances } from '../../context/AdvanceContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { getTodayString } from '../../utils/dateUtils';
 
 const AdvanceForm = ({ open, onClose, preSelectedWorker = null }) => {
   const { workers, getActiveWorkers } = useWorkers();
   const { addAdvance } = useAdvances();
+  const { getText } = useLanguage();
   const activeWorkers = getActiveWorkers();
 
   const [formData, setFormData] = useState({
@@ -41,12 +43,12 @@ const AdvanceForm = ({ open, onClose, preSelectedWorker = null }) => {
     setError('');
 
     if (!formData.workerId) {
-      setError('Please select a worker / कर्मचारी चुनें');
+      setError(getText('Please select a worker', 'कर्मचारी चुनें'));
       return;
     }
 
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      setError('Please enter a valid amount / वैध राशि दर्ज करें');
+      setError(getText('Please enter a valid amount', 'वैध राशि दर्ज करें'));
       return;
     }
 
@@ -74,7 +76,7 @@ const AdvanceForm = ({ open, onClose, preSelectedWorker = null }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Record Advance / अग्रिम दर्ज करें</DialogTitle>
+      <DialogTitle>{getText('Record Advance', 'अग्रिम दर्ज करें')}</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
           {error && (
@@ -83,14 +85,20 @@ const AdvanceForm = ({ open, onClose, preSelectedWorker = null }) => {
             </Alert>
           )}
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Worker / कर्मचारी *</InputLabel>
+          {activeWorkers.length === 0 && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {getText('No active workers available', 'कोई सक्रिय कर्मचारी उपलब्ध नहीं')}
+            </Alert>
+          )}
+
+          <FormControl fullWidth sx={{ mb: 2 }} disabled={activeWorkers.length === 0 || !!preSelectedWorker}>
+            <InputLabel>{getText('Worker', 'कर्मचारी')} *</InputLabel>
             <Select
               name="workerId"
               value={formData.workerId}
-              label="Worker / कर्मचारी *"
+              label={`${getText('Worker', 'कर्मचारी')} *`}
               onChange={handleChange}
-              disabled={!!preSelectedWorker}
+              disabled={activeWorkers.length === 0 || !!preSelectedWorker}
             >
               {activeWorkers.map(w => (
                 <MenuItem key={w.id} value={w.id}>
@@ -102,7 +110,7 @@ const AdvanceForm = ({ open, onClose, preSelectedWorker = null }) => {
 
           <TextField
             fullWidth
-            label="Amount / राशि *"
+            label={`${getText('Amount', 'राशि')} *`}
             name="amount"
             type="number"
             value={formData.amount}
@@ -116,7 +124,7 @@ const AdvanceForm = ({ open, onClose, preSelectedWorker = null }) => {
 
           <TextField
             fullWidth
-            label="Date / तारीख"
+            label={getText('Date', 'तारीख')}
             name="date"
             type="date"
             value={formData.date}
@@ -127,19 +135,19 @@ const AdvanceForm = ({ open, onClose, preSelectedWorker = null }) => {
 
           <TextField
             fullWidth
-            label="Reason / कारण (Optional)"
+            label={getText('Reason (Optional)', 'कारण (वैकल्पिक)')}
             name="reason"
             value={formData.reason}
             onChange={handleChange}
             multiline
             rows={2}
-            placeholder="e.g., Medical emergency, Festival advance..."
+            placeholder={getText('e.g., Medical emergency, Festival advance...', 'जैसे, चिकित्सा आपातकाल, त्योहार अग्रिम...')}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleClose}>Cancel / रद्द करें</Button>
-          <Button type="submit" variant="contained">
-            Save / सेव करें
+          <Button onClick={handleClose}>{getText('Cancel', 'रद्द करें')}</Button>
+          <Button type="submit" variant="contained" disabled={activeWorkers.length === 0}>
+            {getText('Save', 'सेव करें')}
           </Button>
         </DialogActions>
       </form>

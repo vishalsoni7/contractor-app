@@ -111,12 +111,13 @@ const WorkerReport = () => {
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
-        <FormControl size="small" sx={{ width: isMobile ? '100%' : 200, mb: 2 }}>
+        <FormControl size="small" sx={{ width: isMobile ? '100%' : 200, mb: 2 }} disabled={workers.length === 0}>
           <InputLabel>{getText('Select Worker', 'कर्मचारी चुनें')}</InputLabel>
           <Select
             value={selectedWorker}
             label={getText('Select Worker', 'कर्मचारी चुनें')}
             onChange={(e) => setSelectedWorker(e.target.value)}
+            disabled={workers.length === 0}
           >
             {workers.map(w => (
               <MenuItem key={w.id} value={w.id}>
@@ -127,13 +128,13 @@ const WorkerReport = () => {
         </FormControl>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-          <IconButton onClick={handlePrevMonth} size="small">
+          <IconButton onClick={handlePrevMonth} size="small" disabled={workers.length === 0}>
             <ChevronLeft />
           </IconButton>
           <Typography variant="subtitle1" sx={{ minWidth: 160, textAlign: 'center' }}>
             {getMonthName(month)} {year}
           </Typography>
-          <IconButton onClick={handleNextMonth} size="small">
+          <IconButton onClick={handleNextMonth} size="small" disabled={workers.length === 0}>
             <ChevronRight />
           </IconButton>
         </Box>
@@ -150,7 +151,7 @@ const WorkerReport = () => {
                     {monthStats.present}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Present / उपस्थित
+                    {getText('Present', 'उपस्थित')}
                   </Typography>
                 </CardContent>
               </Card>
@@ -162,7 +163,7 @@ const WorkerReport = () => {
                     {monthStats.absent}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Absent / अनुपस्थित
+                    {getText('Absent', 'अनुपस्थित')}
                   </Typography>
                 </CardContent>
               </Card>
@@ -174,7 +175,7 @@ const WorkerReport = () => {
                     {monthStats.overtimeHours}h
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    OT / ओवरटाइम
+                    {getText('OT', 'ओवरटाइम')}
                   </Typography>
                 </CardContent>
               </Card>
@@ -186,7 +187,7 @@ const WorkerReport = () => {
                     ₹{advanceDeduction.toLocaleString()}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Advance / अग्रिम
+                    {getText('Advance', 'अग्रिम')}
                   </Typography>
                 </CardContent>
               </Card>
@@ -198,11 +199,11 @@ const WorkerReport = () => {
                     ₹{netEarnings.toLocaleString()}
                   </Typography>
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Net Pay / शुद्ध वेतन
+                    {getText('Net Pay', 'शुद्ध वेतन')}
                   </Typography>
                   {(overtimePay > 0 || advanceDeduction > 0) && (
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', display: 'block' }}>
-                      (Gross: ₹{grossEarnings.toLocaleString()})
+                      ({getText('Gross', 'कुल')}: ₹{grossEarnings.toLocaleString()})
                     </Typography>
                   )}
                 </CardContent>

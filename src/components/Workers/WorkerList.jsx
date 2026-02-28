@@ -58,6 +58,7 @@ const WorkerList = ({ onEdit, onDelete, onToggleStatus }) => {
           placeholder={getText('Search workers', 'कर्मचारी खोजें')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          disabled={workers.length === 0}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -67,12 +68,13 @@ const WorkerList = ({ onEdit, onDelete, onToggleStatus }) => {
           }}
           sx={{ minWidth: 250 }}
         />
-        <FormControl size="small" sx={{ minWidth: 150 }}>
+        <FormControl size="small" sx={{ minWidth: 150 }} disabled={workers.length === 0}>
           <InputLabel>{getText('Status', 'स्थिति')}</InputLabel>
           <Select
             value={statusFilter}
             label={getText('Status', 'स्थिति')}
             onChange={(e) => setStatusFilter(e.target.value)}
+            disabled={workers.length === 0}
           >
             <MenuItem value="all">{getText('All', 'सभी')}</MenuItem>
             <MenuItem value="active">{getText('Active', 'सक्रिय')}</MenuItem>

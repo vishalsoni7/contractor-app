@@ -21,6 +21,7 @@ import {
   AccessTime,
 } from '@mui/icons-material';
 import { useAttendance } from '../../context/AttendanceContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { getWorkerStats } from '../../utils/calculations';
 import { formatDisplayDate, formatTimeRange } from '../../utils/dateUtils';
 
@@ -40,6 +41,7 @@ const StatBox = ({ icon, label, value, color = 'text.primary' }) => (
 
 const WorkerDetails = ({ open, onClose, worker }) => {
   const { attendance } = useAttendance();
+  const { getText } = useLanguage();
 
   if (!worker) return null;
 
@@ -56,7 +58,7 @@ const WorkerDetails = ({ open, onClose, worker }) => {
           <Person color="primary" />
           {worker.name}
           <Chip
-            label={worker.status === 'active' ? 'Active' : 'Inactive'}
+            label={worker.status === 'active' ? getText('Active', 'सक्रिय') : getText('Inactive', 'निष्क्रिय')}
             color={worker.status === 'active' ? 'success' : 'default'}
             size="small"
             sx={{ ml: 'auto' }}
@@ -90,19 +92,19 @@ const WorkerDetails = ({ open, onClose, worker }) => {
         <Grid container spacing={3}>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">
-              Age / उम्र
+              {getText('Age', 'उम्र')}
             </Typography>
-            <Typography variant="body1">{worker.age} years</Typography>
+            <Typography variant="body1">{worker.age} {getText('years', 'वर्ष')}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">
-              Daily Wage / दैनिक मजदूरी
+              {getText('Daily Wage', 'दैनिक मजदूरी')}
             </Typography>
             <Typography variant="body1">₹{worker.dailyWage}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">
-              Work Hours / काम के घंटे
+              {getText('Work Hours', 'काम के घंटे')}
             </Typography>
             <Typography variant="body1">
               {formatTimeRange(worker.workStartTime, worker.workEndTime)}
@@ -110,7 +112,7 @@ const WorkerDetails = ({ open, onClose, worker }) => {
           </Grid>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">
-              Joining Date / शामिल होने की तारीख
+              {getText('Joining Date', 'शामिल होने की तारीख')}
             </Typography>
             <Typography variant="body1">
               {formatDisplayDate(worker.joiningDate)}
@@ -121,14 +123,14 @@ const WorkerDetails = ({ open, onClose, worker }) => {
         <Divider sx={{ my: 3 }} />
 
         <Typography variant="h6" gutterBottom>
-          Attendance Summary / हाज़िरी सारांश
+          {getText('Attendance Summary', 'हाज़िरी सारांश')}
         </Typography>
 
         <Grid container spacing={2}>
           <Grid item xs={6} sm={3}>
             <StatBox
               icon={<CalendarToday color="success" />}
-              label="Present / उपस्थित"
+              label={getText('Present', 'उपस्थित')}
               value={stats.present}
               color="success.main"
             />
@@ -136,7 +138,7 @@ const WorkerDetails = ({ open, onClose, worker }) => {
           <Grid item xs={6} sm={3}>
             <StatBox
               icon={<CalendarToday color="error" />}
-              label="Absent / अनुपस्थित"
+              label={getText('Absent', 'अनुपस्थित')}
               value={stats.absent}
               color="error.main"
             />
@@ -144,7 +146,7 @@ const WorkerDetails = ({ open, onClose, worker }) => {
           <Grid item xs={6} sm={3}>
             <StatBox
               icon={<AccessTime color="info" />}
-              label="OT Hours / ओवरटाइम"
+              label={getText('OT Hours', 'ओवरटाइम')}
               value={`${stats.overtimeHours}h`}
               color="info.main"
             />
@@ -152,7 +154,7 @@ const WorkerDetails = ({ open, onClose, worker }) => {
           <Grid item xs={6} sm={3}>
             <StatBox
               icon={<TrendingUp color="warning" />}
-              label="Attendance %"
+              label={getText('Attendance %', 'उपस्थिति %')}
               value={`${stats.attendancePercentage}%`}
               color="warning.main"
             />
@@ -171,11 +173,11 @@ const WorkerDetails = ({ open, onClose, worker }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CurrencyRupee />
             <Box>
-              <Typography variant="body2">Total Earnings / कुल कमाई</Typography>
+              <Typography variant="body2">{getText('Total Earnings', 'कुल कमाई')}</Typography>
               <Typography variant="h4">₹{stats.totalEarnings.toLocaleString()}</Typography>
               {stats.overtimePay > 0 && (
                 <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                  (includes ₹{Math.round(stats.overtimePay)} OT)
+                  ({getText('includes', 'शामिल है')} ₹{Math.round(stats.overtimePay)} OT)
                 </Typography>
               )}
             </Box>
@@ -183,7 +185,7 @@ const WorkerDetails = ({ open, onClose, worker }) => {
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose}>Close / बंद करें</Button>
+        <Button onClick={onClose}>{getText('Close', 'बंद करें')}</Button>
       </DialogActions>
     </Dialog>
   );

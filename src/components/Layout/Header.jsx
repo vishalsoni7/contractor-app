@@ -21,6 +21,7 @@ import {
   AccountCircle,
   Logout,
   Person,
+  Phone,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -125,8 +126,9 @@ const Header = ({ drawerWidth, onMenuClick }) => {
             {contractor?.firstName} {contractor?.lastName}
           </MenuItem>
           <MenuItem disabled sx={{ opacity: 0.7 }}>
-            <Typography variant="caption" sx={{ ml: 4 }}>
-              +91 {contractor?.mobile}
+            <Phone sx={{ mr: 1, fontSize: 20 }} />
+            <Typography variant="caption">
+              +91 {contractor?.phone}
             </Typography>
           </MenuItem>
           <MenuItem onClick={handleProfile}>

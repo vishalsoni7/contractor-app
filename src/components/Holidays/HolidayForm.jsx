@@ -9,8 +9,10 @@ import {
   Grid,
 } from '@mui/material';
 import { getCurrentYear } from '../../utils/dateUtils';
+import { useLanguage } from '../../context/LanguageContext';
 
 const HolidayForm = ({ open, onClose, onSubmit }) => {
+  const { getText } = useLanguage();
   const [formData, setFormData] = useState({
     date: '',
     name: '',
@@ -57,13 +59,13 @@ const HolidayForm = ({ open, onClose, onSubmit }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add Holiday / छुट्टी जोड़ें</DialogTitle>
+      <DialogTitle>{getText('Add Holiday', 'छुट्टी जोड़ें')}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Date / तारीख"
+              label={getText('Date', 'तारीख')}
               name="date"
               type="date"
               value={formData.date}
@@ -76,21 +78,21 @@ const HolidayForm = ({ open, onClose, onSubmit }) => {
           <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Holiday Name / छुट्टी का नाम"
+              label={getText('Holiday Name', 'छुट्टी का नाम')}
               name="name"
               value={formData.name}
               onChange={handleChange}
               error={!!errors.name}
               helperText={errors.name}
-              placeholder="e.g., Diwali, Republic Day"
+              placeholder={getText('e.g., Diwali, Republic Day', 'जैसे, दिवाली, गणतंत्र दिवस')}
             />
           </Grid>
         </Grid>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose}>Cancel / रद्द करें</Button>
+        <Button onClick={handleClose}>{getText('Cancel', 'रद्द करें')}</Button>
         <Button variant="contained" onClick={handleSubmit}>
-          Add / जोड़ें
+          {getText('Add', 'जोड़ें')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -139,7 +139,7 @@ const Profile = () => {
                 {contractor?.firstName} {contractor?.lastName}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                +91 {contractor?.mobile}
+                +91 {contractor?.phone}
               </Typography>
               {contractor?.companyName && (
                 <Typography variant="body1" color="primary" sx={{ mt: 1 }}>
@@ -221,8 +221,8 @@ const Profile = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label={getText('Mobile', 'मोबाइल')}
-                    value={contractor?.mobile || ''}
+                    label={getText('Phone', 'फ़ोन')}
+                    value={contractor?.phone || ''}
                     disabled
                     InputProps={{
                       startAdornment: (
